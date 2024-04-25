@@ -5,6 +5,7 @@ import android.health.connect.datatypes.ExerciseRoute
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.Status
@@ -29,7 +30,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     private lateinit var mMap: GoogleMap
     private lateinit var autocompleteFragment:AutocompleteSupportFragment
-    private lateinit var lastLocation: Location
+    private lateinit var currentLocation: Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     companion object{
@@ -47,7 +48,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        getLocationPermissions()
+        val recenterLocationButton:ImageButton = findViewById(R.id.recenterButton)
+
+        recenterLocationButton.setOnClickListener{
+            recenterLocation()
+        }
 
         Places.initialize(applicationContext, getString(R.string.google_map_api_key))
         autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
@@ -66,19 +71,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     }
 
-    private fun getLocationPermissions() {
+    private fun recenterLocation() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST_CODE)
             return
         }
+        mMap.isMyLocationEnabled = true
+        fusedLocationClient.lastLocation.addOnSuccessListener(this) { location ->
+            if (location != null) {
+                currentLocation = location
+                val currentLatLng = LatLng(location.latitude, location.longitude)
+                val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(currentLatLng, 18f)
+                mMap.animateCamera(newLatLngZoom)
+            }
+        }
     }
 
     private fun zoomOnMap(latLng: LatLng) {
         val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(latLng, 15f)
         mMap.animateCamera(newLatLngZoom)
-        mMap.addMarker(MarkerOptions().position(latLng).title("Marker"))
+        mMap.addMarker(MarkerOptions().position(latLng).title("$latLng"))
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -87,7 +101,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         mMap.uiSettings.isZoomControlsEnabled = true
 
-        setUpMap()
+        recenterLocation()
 
         //mMap?.addMarker(MarkerOptions().position(latLng).title("Marker"))
 
@@ -95,18 +109,5 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         //val lisbon = LatLng(38.736946, -9.142685)
         //mMap.addMarker(MarkerOptions().position(lisbon).title("Marker in Lisbon"))
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(lisbon))
-    }
-
-    private fun setUpMap() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mMap.isMyLocationEnabled = true
-            fusedLocationClient.lastLocation.addOnSuccessListener(this) { location ->
-                if (location != null) {
-                    lastLocation = location
-                    val currentLatLng = LatLng(location.latitude, location.longitude)
-                    zoomOnMap(currentLatLng)
-                }
-            }
-        }
     }
 }
