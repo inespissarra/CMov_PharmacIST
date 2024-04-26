@@ -53,8 +53,6 @@
         android:layout_width="0dp"
         android:layout_height="64dp"
         android:radius="25dp"
-        app:itemIconTint="@color/green_4"
-        app:itemTextColor="@color/green_4"
         app:layout_constraintBottom_toBottomOf="@+id/map"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
