@@ -1,29 +1,28 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
 import android.content.pm.PackageManager
-import android.health.connect.datatypes.ExerciseRoute
 import android.location.Location
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
-import pt.ulisboa.tecnico.cmov.myapplication.databinding.ActivityMapsBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import android.content.Intent
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
@@ -40,6 +39,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
+        val bottomNavView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
+        bottomNavView.selectedItemId = R.id.nav_map
+        bottomNavView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_map -> true
+                R.id.nav_medicine -> {
+                    startActivity(Intent(applicationContext, MedicineActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_profile -> {
+                    startActivity(Intent(applicationContext, ProfileActivity::class.java))
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
