@@ -6,4 +6,9 @@
     <string name="medicine">Medicine</string>
     <string name="profile">Profile</string>
     <string name="image">Image</string>
+    <string name="register_a_new_pharmacy">Register a new pharmacy</string>
+    <string name="name_field">Name*</string>
+    <string name="address_field">Address*</string>
+    <string name="photo_field">Add photo*</string>
+    <string name="register">Register</string>
 </resources>

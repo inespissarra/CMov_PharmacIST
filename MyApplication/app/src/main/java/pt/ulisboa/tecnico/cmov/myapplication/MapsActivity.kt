@@ -45,10 +45,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         createMapFragment()
         createRecenterLocation()
+        createAddPharmacy()
 
         Places.initialize(applicationContext, getString(R.string.google_map_api_key))
 
         createSearchBar()
+        createBottomNavigation()
+    }
+
+    override fun onResume() {
+        super.onResume()
         createBottomNavigation()
     }
 
@@ -63,6 +69,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         val recenterLocationButton: ImageButton = findViewById(R.id.recenterButton)
         recenterLocationButton.setOnClickListener{
             recenterLocation()
+        }
+    }
+
+    private fun createAddPharmacy(){
+        val addPharmacyButton: ImageButton = findViewById(R.id.addPharmacyButton)
+        addPharmacyButton.setOnClickListener{
+            startActivity(Intent(applicationContext, AddPharmacyActivity::class.java))
         }
     }
 
@@ -90,12 +103,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                 R.id.nav_map -> true
                 R.id.nav_medicine -> {
                     startActivity(Intent(applicationContext, MedicineActivity::class.java))
-                    finish()
                     true
                 }
                 R.id.nav_profile -> {
                     startActivity(Intent(applicationContext, ProfileActivity::class.java))
-                    finish()
                     true
                 }
                 else -> false

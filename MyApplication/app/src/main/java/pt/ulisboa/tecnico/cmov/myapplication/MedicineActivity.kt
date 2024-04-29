@@ -10,6 +10,15 @@ class MedicineActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_medicine)
 
+        createBottomNavigation()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        createBottomNavigation()
+    }
+
+    private fun createBottomNavigation() {
         val bottomNavView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavView.selectedItemId = R.id.nav_medicine
         bottomNavView.setOnItemSelectedListener { item ->

@@ -2,17 +2,21 @@ package pt.ulisboa.tecnico.cmov.myapplication
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+    }
 
+    override fun onResume() {
+        super.onResume()
+        createBottomNavigation()
+    }
+
+    private fun createBottomNavigation() {
         val bottomNavView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavView.selectedItemId = R.id.nav_profile
         bottomNavView.setOnItemSelectedListener { item ->
