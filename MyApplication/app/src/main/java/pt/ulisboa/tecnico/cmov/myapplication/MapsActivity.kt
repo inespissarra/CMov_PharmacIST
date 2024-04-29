@@ -1,13 +1,14 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -15,6 +16,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
@@ -22,7 +24,6 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import android.content.Intent
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
@@ -40,9 +41,51 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
-        val bottomNavView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
-        bottomNavView.selectedItemId = R.id.nav_map
-        bottomNavView.setOnItemSelectedListener { item ->
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        createMapFragment()
+        createRecenterLocation()
+
+        Places.initialize(applicationContext, getString(R.string.google_map_api_key))
+
+        createSearchBar()
+        createBottomNavigation()
+    }
+
+    private fun createMapFragment() {
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        val mapFragment = supportFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+    }
+
+    private fun createRecenterLocation() {
+        val recenterLocationButton: ImageButton = findViewById(R.id.recenterButton)
+        recenterLocationButton.setOnClickListener{
+            recenterLocation()
+        }
+    }
+
+    private fun createSearchBar() {
+        autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
+                as AutocompleteSupportFragment
+        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
+        autocompleteFragment.setOnPlaceSelectedListener(object: PlaceSelectionListener {
+            override fun onError(p0: Status) {
+                Toast.makeText(this@MapsActivity, "Some error in search", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onPlaceSelected(place: Place) {
+                val latLng = place.latLng!!
+                zoomOnMap(latLng)
+            }
+        })
+    }
+
+    private fun createBottomNavigation() {
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView.selectedItemId = R.id.nav_map
+        bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
             when (item.itemId) {
                 R.id.nav_map -> true
                 R.id.nav_medicine -> {
@@ -58,35 +101,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                 else -> false
             }
         }
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
-        val recenterLocationButton:ImageButton = findViewById(R.id.recenterButton)
-
-        recenterLocationButton.setOnClickListener{
-            recenterLocation()
-        }
-
-        Places.initialize(applicationContext, getString(R.string.google_map_api_key))
-        autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
-                as AutocompleteSupportFragment
-        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
-        autocompleteFragment.setOnPlaceSelectedListener(object: PlaceSelectionListener{
-            override fun onError(p0: Status) {
-                Toast.makeText(this@MapsActivity, "Some error in search", Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onPlaceSelected(place: Place) {
-                val latLng = place.latLng!!
-                zoomOnMap(latLng)
-            }
-        })
-
     }
 
     private fun recenterLocation() {
@@ -97,6 +111,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
             return
         }
         mMap.isMyLocationEnabled = true
+        mMap.uiSettings.isMyLocationButtonEnabled = false
         fusedLocationClient.lastLocation.addOnSuccessListener(this) { location ->
             if (location != null) {
                 currentLocation = location
@@ -115,17 +130,45 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        mMap.mapType = GoogleMap.MAP_TYPE_HYBRID
-
-        mMap.uiSettings.isZoomControlsEnabled = true
+        mMap.mapType = GoogleMap.MAP_TYPE_TERRAIN
 
         recenterLocation()
+        markPlaces()
+    }
 
-        //mMap?.addMarker(MarkerOptions().position(latLng).title("Marker"))
+    private fun markPlaces(){
+        val myPlaces = listOf(
+            LatLng(38.736946, -9.142685),
+            LatLng( 37.426, -122.163),
+            LatLng(37.430, -122.173),
+            LatLng(37.444, -122.170)
+        )
+        val staredPlaces = listOf(
+            LatLng(38.6642, -9.07666),
+            LatLng(1.282, 103.864),
+            LatLng( 1.319, 103.706),
+            LatLng( 1.249, 103.830),
+            LatLng( 1.3138, 103.8159)
+        )
+        for(latLng in myPlaces){
+            addMarker(latLng)
+        }
+        for(latLng in staredPlaces){
+            addStarMarker(latLng)
+        }
+    }
 
-        // Add a marker in Sydney and move the camera
-        //val lisbon = LatLng(38.736946, -9.142685)
-        //mMap.addMarker(MarkerOptions().position(lisbon).title("Marker in Lisbon"))
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(lisbon))
+    private fun addMarker(latLng: LatLng){
+        mMap.addMarker(MarkerOptions()
+            .position(latLng)
+            .title("Marker")
+            .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)))
+    }
+
+    private fun addStarMarker(latLng: LatLng){
+        mMap.addMarker(MarkerOptions()
+            .position(latLng)
+            .title("Star Marker")
+            .icon(BitmapDescriptorFactory.fromResource(R.drawable.star_marker)))
     }
 }

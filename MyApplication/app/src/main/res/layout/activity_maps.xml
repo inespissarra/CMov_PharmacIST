@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MapsActivity">
-
-    <FrameLayout
-        android:id="@+id/frame_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map"
@@ -23,14 +19,29 @@
 
     <ImageButton
         android:id="@+id/recenterButton"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="30dp"
-        android:layout_marginBottom="120dp"
-        android:background="@null"
-        android:contentDescription="Image"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginBottom="76dp"
+        android:adjustViewBounds="false"
+        android:background="@drawable/bottom_extras_background"
+        android:contentDescription="@string/image"
         android:scaleType="fitXY"
-        android:src="@drawable/navigator"
+        android:src="@drawable/current_location"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+        android:id="@+id/addPharmacyButton"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="308dp"
+        android:layout_marginBottom="76dp"
+        android:adjustViewBounds="false"
+        android:background="@drawable/bottom_extras_background"
+        android:contentDescription="@string/image"
+        android:scaleType="centerCrop"
+        android:src="@drawable/add_new_pharmacy"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
