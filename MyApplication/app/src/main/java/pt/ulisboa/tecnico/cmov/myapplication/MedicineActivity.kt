@@ -25,7 +25,7 @@ class MedicineActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_medicine -> true
                 R.id.nav_map -> {
-                    startActivity(Intent(applicationContext, MapsActivity::class.java))
+                    //startActivity(Intent(applicationContext, MapsActivity::class.java))
                     finish()
                     true
                 }

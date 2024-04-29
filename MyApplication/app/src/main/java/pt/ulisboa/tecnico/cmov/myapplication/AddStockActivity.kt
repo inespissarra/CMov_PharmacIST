@@ -54,7 +54,7 @@ class AddStockActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
             when (item.itemId) {
                 R.id.nav_map -> {
-                    startActivity(Intent(applicationContext, MapsActivity::class.java))
+                    //startActivity(Intent(applicationContext, MapsActivity::class.java))
                     finish()
                     true
                 }
