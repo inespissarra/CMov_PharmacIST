@@ -54,6 +54,16 @@ class AddPharmacyActivity : AppCompatActivity() {
             }
         }
 
+        val photoField: TextView = findViewById(R.id.photoField)
+        photoField.setOnClickListener {
+            if(checkCameraPermissions()){
+                pickImageCamera()
+            }
+            else{
+                requestCameraPermission()
+            }
+        }
+
         val galleryButton: ImageButton = findViewById(R.id.galleryButton)
         galleryButton.setOnClickListener{
             if(checkStoragePermissions()){
@@ -68,13 +78,18 @@ class AddPharmacyActivity : AppCompatActivity() {
         registerButton.setOnClickListener{
             registerPharmacy()
         }
+
+        val locationEdit: TextView = findViewById(R.id.addressField)
+        locationEdit.setOnClickListener{
+            startActivity(Intent(applicationContext, SelectLocationActivity::class.java))
+        }
     }
 
     private fun registerPharmacy() {
         val name: EditText = findViewById(R.id.nameField)
-        val address: EditText = findViewById(R.id.addressField)
+        //val address: EditText = findViewById(R.id.addressField)
         if(name.text.toString().takeIf { it.isNotBlank() }!=null
-            && address.text.toString().takeIf { it.isNotBlank() }!=null
+            //&& address.text.toString().takeIf { it.isNotBlank() }!=null
             && textIv.text.toString().takeIf { it.isNotBlank() }!=null) {
             showToast("Successfully registered pharmacy")
             finish()

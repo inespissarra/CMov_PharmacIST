@@ -11,8 +11,10 @@ material = "1.10.0"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 places = "3.4.0"
 playServicesLocation = "21.2.0"
+playServicesLocationVersion = "20.0.0"
 playServicesMaps = "18.2.0"
 constraintlayout = "2.1.4"
+playServicesMapsVersion = "18.1.0"
 playServicesMlkitBarcodeScanning = "18.3.0"
 zxingAndroidEmbedded = "4.3.0"
 
@@ -26,8 +28,10 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+play-services-location-v2000 = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocationVersion" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+play-services-maps-v1810 = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMapsVersion" }
 play-services-mlkit-barcode-scanning = { group = "com.google.android.gms", name = "play-services-mlkit-barcode-scanning", version.ref = "playServicesMlkitBarcodeScanning" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 
