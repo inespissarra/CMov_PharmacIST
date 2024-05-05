@@ -54,6 +54,12 @@ class MedicineActivity : AppCompatActivity() {
         //binding.medicineRecyclerView.adapter = adapter
         recyclerView.adapter = adapter
 
+        adapter.onItemClick = {
+            val intent = Intent(this, MedicineInformationPanelActivity::class.java)
+            intent.putExtra("medicine", it)
+            startActivity(intent)
+        }
+
         eventChangeListener()
 
         searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
@@ -67,6 +73,7 @@ class MedicineActivity : AppCompatActivity() {
             }
 
         })
+
     }
 
     private fun searchMedicine(query: String?) {

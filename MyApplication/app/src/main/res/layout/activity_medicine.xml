@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,66 +8,32 @@
     android:background="@color/beige_1"
     tools:context=".MedicineActivity">
 
-    <!--<FrameLayout
+    <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="96dp"
         android:background="@drawable/search_bar_background"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"></FrameLayout>
 
-        <SearchView
-            android:id="@+id/search_medicine"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="32dp"
-            android:iconifiedByDefault="false"
-            android:searchHintIcon="@null"
-            android:background="@drawable/edit_text_background"
-            android:closeIcon="@drawable/baseline_clear_24"
-            android:focusable="false"
-            android:gravity="center"
-            android:queryHint="Enter medicine name..."
-            android:searchIcon="@drawable/baseline_search_24" />
-    </FrameLayout>-->
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/materialCardView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="12dp"
-        app:cardUseCompatPadding="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/search_medicine"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:iconifiedByDefault="false"
-            app:queryHint="Enter medicine name ..." />
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <!--<SearchView
+    <androidx.appcompat.widget.SearchView
         android:id="@+id/search_medicine"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="32dp"
         android:background="@drawable/edit_text_background"
-        android:closeIcon="@drawable/baseline_clear_24"
+        app:closeIcon="@drawable/baseline_clear_24"
         android:focusable="false"
         android:gravity="center"
-        android:iconifiedByDefault="false"
-        android:queryHint="Enter medicine name..."
+        app:iconifiedByDefault="false"
+        app:queryHint="Enter medicine name..."
+        android:theme="@style/SearchViewTheme"
         android:searchHintIcon="@null"
-        android:searchIcon="@drawable/baseline_search_24"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />-->
-
+        app:searchIcon="@drawable/baseline_search_24"
+        app:layout_constraintEnd_toEndOf="@+id/frameLayout"
+        app:layout_constraintStart_toStartOf="@+id/frameLayout"
+        app:layout_constraintTop_toTopOf="@+id/frameLayout" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/medicineRecyclerView"
@@ -75,7 +42,7 @@
         android:layout_marginTop="120dp"
         android:scrollbars="vertical"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/materialCardView"
+        app:layout_constraintTop_toBottomOf="@+id/frameLayout"
         tools:listitem="@layout/recycler_item_medicine" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

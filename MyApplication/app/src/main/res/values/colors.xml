@@ -13,11 +13,12 @@
     <color name="green_4">#424C44</color>
     <color name="beige_1">#F8F2EB</color>
     <color name="beige_2">#EEE0CB</color>
+    <color name="beige_3">#D4CEBB</color>
+    <color name="recycler_color">#D4CEBB</color>
     <color name="brown_1">#8C7E72</color>
     <color name="brown_2">#5D544C</color>
     <color name="brown_3">#363230</color>
     <color name="grey_1">#D1D1D1</color>
-    <color name="recycler_color">#D4CEBB</color>
     <color name="red">#D74F4F</color>
 
 </resources>

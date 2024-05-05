@@ -9,7 +9,19 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class MedicineAdapter(private val context: Context, private var dataList: List<MedicineMetaData>): RecyclerView.Adapter<MedicineViewHolder>() {
+class MedicineAdapter(private val context: Context, private var dataList: List<MedicineMetaData>)
+    : RecyclerView.Adapter<MedicineAdapter.MedicineViewHolder>() {
+    var onItemClick : ((MedicineMetaData) -> Unit)? = null
+
+    inner class MedicineViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+        val recImage: ImageView = itemView.findViewById(R.id.recMedicineImage)
+        val recName: TextView = itemView.findViewById(R.id.recMedicineName)
+
+        /*init {
+            recImage = itemView.findViewById(R.id.recMedicineImage)
+            recName = itemView.findViewById(R.id.recMedicineName)
+        }*/
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MedicineViewHolder {
         val view: View = LayoutInflater.from(parent.context).inflate(R.layout.recycler_item_medicine, parent, false)
         return MedicineViewHolder(view)
@@ -20,8 +32,13 @@ class MedicineAdapter(private val context: Context, private var dataList: List<M
     }
 
     override fun onBindViewHolder(holder: MedicineViewHolder, position: Int) {
-        Glide.with(context).load(dataList[position].image).into(holder.recImage)
-        holder.recName.text = dataList[position].name
+        val medicine = dataList[position]
+        Glide.with(context).load(medicine.image).into(holder.recImage)
+        holder.recName.text = medicine.name
+
+        holder.itemView.setOnClickListener {
+            onItemClick?.invoke(medicine)
+        }
     }
 
     fun searchMedicineList(searchList: List<MedicineMetaData>) {
@@ -31,13 +48,5 @@ class MedicineAdapter(private val context: Context, private var dataList: List<M
 
 }
 
-class MedicineViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-    val recImage: ImageView = itemView.findViewById(R.id.recMedicineImage)
-    val recName: TextView = itemView.findViewById(R.id.recMedicineName)
 
-    /*init {
-        recImage = itemView.findViewById(R.id.recMedicineImage)
-        recName = itemView.findViewById(R.id.recMedicineName)
-    }*/
-}
 

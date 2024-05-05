@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="bottomIconColor" format="color"/>
+    <attr name="navigationBackgroundColor" format="color"/>
+    <attr name="applicationNameColor" format="color"/>
+    <attr name="hintColor" format="color"/>
+    <attr name="buttonColor" format="color"/>
+    <attr name="buttonTextColor" format="color"/>
+    <attr name="iconBackgroundColor" format="color"/>
+    <attr name="iconColor" format="color"/>
+    <attr name="textBoxBackgroundColor" format="color"/>
+    <attr name="textBoxBorderColor" format="color"/>
+    <attr name="pageBackgroundColor" format="color"/>
+    <attr name="itemBackgroundColor" format="color"/>
+    <attr name="itemTextColor" format="color"/>
+    <attr name="titleTextColor" format="color"/>
+</resources>

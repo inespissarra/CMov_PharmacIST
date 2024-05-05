@@ -9,10 +9,12 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -41,21 +43,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MedicineActivity" />
-        <activity
-            android:name=".ProfileActivity" />
-        <activity
-            android:name=".AddStockActivity" />
-        <activity
-            android:name=".AddPharmacyActivity" />
-        <activity
-            android:name=".SelectLocationActivity" />
+        <activity android:name=".MedicineActivity" />
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".AddStockActivity" />
+        <activity android:name=".AddPharmacyActivity" />
+        <activity android:name=".SelectLocationActivity" />
+        <activity android:name=".MedicineInformationPanelActivity" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
-            tools:replace="screenOrientation"
-            tools:ignore="DiscouragedApi" />
+            tools:ignore="DiscouragedApi"
+            tools:replace="screenOrientation" />
     </application>
 
 </manifest>
