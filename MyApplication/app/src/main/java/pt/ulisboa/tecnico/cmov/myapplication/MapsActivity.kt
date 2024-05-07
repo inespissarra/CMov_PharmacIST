@@ -85,7 +85,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
         autocompleteFragment.setOnPlaceSelectedListener(object: PlaceSelectionListener {
             override fun onError(p0: Status) {
-                Toast.makeText(this@MapsActivity, "Some error in search", Toast.LENGTH_SHORT).show()
+                if (!p0.isCanceled) {
+                    Toast.makeText(this@MapsActivity, "Some error in search", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onPlaceSelected(place: Place) {
