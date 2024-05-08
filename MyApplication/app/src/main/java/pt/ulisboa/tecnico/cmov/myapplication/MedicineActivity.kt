@@ -52,9 +52,10 @@ class MedicineActivity : AppCompatActivity() {
         medicineList = ArrayList()
         adapter = MedicineAdapter(this@MedicineActivity, medicineList)
         //binding.medicineRecyclerView.adapter = adapter
-        recyclerView.adapter = adapter
+        //recyclerView.adapter = adapter
 
         adapter.onItemClick = {
+            Log.i("click", "onclick")
             val intent = Intent(this, MedicineInformationPanelActivity::class.java)
             intent.putExtra("medicine", it)
             startActivity(intent)
@@ -89,7 +90,7 @@ class MedicineActivity : AppCompatActivity() {
                 Toast.makeText(this, "No medicine found", Toast.LENGTH_SHORT).show()
             }
             else {
-                adapter.searchMedicineList(searchList)
+                adapter.setMedicineList(searchList)
                 recyclerView.adapter = adapter
             }
         }
@@ -102,7 +103,7 @@ class MedicineActivity : AppCompatActivity() {
 
     private fun eventChangeListener() {
 
-        db = FirebaseFirestore.getInstance()
+        db = Firebase.firestore
         db.collection("medicines").get().
                 addOnSuccessListener {
                     if (!it.isEmpty) {
@@ -112,7 +113,8 @@ class MedicineActivity : AppCompatActivity() {
                                 medicineList.add(medicine)
                             }
                         }
-                        recyclerView.adapter = MedicineAdapter(this@MedicineActivity, medicineList)
+                        adapter.setMedicineList( medicineList)
+                        recyclerView.adapter = adapter
                     }
                 }.
                 addOnFailureListener {

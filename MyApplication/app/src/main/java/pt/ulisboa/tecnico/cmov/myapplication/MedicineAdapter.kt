@@ -41,7 +41,7 @@ class MedicineAdapter(private val context: Context, private var dataList: List<M
         }
     }
 
-    fun searchMedicineList(searchList: List<MedicineMetaData>) {
+    fun setMedicineList(searchList: List<MedicineMetaData>) {
         dataList = searchList
         notifyDataSetChanged() // TODO: nao ta a funcionar, o eventChangeListener nao listen este notify
     }
