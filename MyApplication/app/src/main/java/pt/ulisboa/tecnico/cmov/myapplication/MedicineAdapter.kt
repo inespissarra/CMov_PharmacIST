@@ -17,10 +17,6 @@ class MedicineAdapter(private val context: Context, private var dataList: List<M
         val recImage: ImageView = itemView.findViewById(R.id.recMedicineImage)
         val recName: TextView = itemView.findViewById(R.id.recMedicineName)
 
-        /*init {
-            recImage = itemView.findViewById(R.id.recMedicineImage)
-            recName = itemView.findViewById(R.id.recMedicineName)
-        }*/
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MedicineViewHolder {
         val view: View = LayoutInflater.from(parent.context).inflate(R.layout.recycler_item_medicine, parent, false)
@@ -34,10 +30,16 @@ class MedicineAdapter(private val context: Context, private var dataList: List<M
     override fun onBindViewHolder(holder: MedicineViewHolder, position: Int) {
         val medicine = dataList[position]
         Glide.with(context).load(medicine.image).into(holder.recImage)
-        holder.recName.text = medicine.name
+        holder.recName.text = medicine.name?.capitalizeFirstLetter()
 
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(medicine)
+        }
+    }
+
+    private fun String.capitalizeFirstLetter(): String {
+        return this.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase() else it.toString()
         }
     }
 

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="application">PharmacIST</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="google_map_api_key">AIzaSyAUZHmeyoE6PxFAwRbvZRWdCWH4vCEAhiw</string>
     <string name="map">Map</string>
@@ -10,5 +11,4 @@
     <string name="name_field">Name*</string>
     <string name="address_field">Address*</string>
     <string name="photo_field">Add photo*</string>
-    <string name="register">Register</string>
 </resources>
