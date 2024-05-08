@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
@@ -15,16 +16,23 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomnavigation.BottomNavigationView
+
 
 class AddPharmacyActivity : AppCompatActivity() {
 
     private lateinit var imageIv : ImageView
     private lateinit var textIv: TextView
+    private lateinit var location: LatLng
+    private lateinit var textLocation: TextView
+    private var locationSelected: Int = 0
 
         companion object{
             private const val CAMERA_REQUEST_CODE = 100
@@ -43,6 +51,7 @@ class AddPharmacyActivity : AppCompatActivity() {
 
         imageIv = findViewById(R.id.photo)
         textIv = findViewById<TextView>(R.id.photoField)!!
+        textLocation = findViewById<TextView>(R.id.addressField)!!
 
         val cameraButton: ImageButton = findViewById(R.id.cameraButton)
         cameraButton.setOnClickListener{
@@ -81,9 +90,39 @@ class AddPharmacyActivity : AppCompatActivity() {
 
         val locationEdit: TextView = findViewById(R.id.addressField)
         locationEdit.setOnClickListener{
-            startActivity(Intent(applicationContext, SelectLocationActivity::class.java))
+            selectLocation()
         }
     }
+
+    private fun selectLocation() {
+        val intent = Intent(applicationContext, SelectLocationActivity::class.java)
+        if(locationSelected==1){
+            intent.putExtra("lat", location.latitude)
+            intent.putExtra("lng", location.longitude)
+        }
+        locationActivityResultLauncher.launch(intent)
+    }
+
+    @SuppressLint("SetTextI18n")
+    private val locationActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ){
+            result ->
+        if(result.resultCode == Activity.RESULT_OK){
+            val data = result.data
+
+            val lat = data!!.getDoubleExtra("latitude", Double.MIN_VALUE)
+            val lng = data.getDoubleExtra("longitude", Double.MIN_VALUE)
+            location = LatLng(lat, lng)
+            val name  = data.getStringExtra("name")
+            textLocation.setText("Location: $name")
+            locationSelected = 1
+        }
+        else{
+            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     private fun registerPharmacy() {
         val name: EditText = findViewById(R.id.nameField)
