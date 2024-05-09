@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.ImageButton
 import android.widget.Toast
@@ -24,14 +25,20 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
+
+    private lateinit var db: FirebaseFirestore
 
     private lateinit var mMap: GoogleMap
     private lateinit var autocompleteFragment:AutocompleteSupportFragment
     private lateinit var currentLocation: Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var pharmaciesList: ArrayList<PharmacyMetaData>
 
     companion object{
         private const val LOCATION_REQUEST_CODE = 1
@@ -146,28 +153,51 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         mMap.mapType = GoogleMap.MAP_TYPE_TERRAIN
 
         recenterLocation()
-        markPlaces()
+
+        pharmaciesList = ArrayList()
+        eventChangeListener()
     }
 
     private fun markPlaces(){
-        val myPlaces = listOf(
-            LatLng(38.736946, -9.142685),
-            LatLng( 37.426, -122.163),
-            LatLng(37.430, -122.173),
-            LatLng(37.444, -122.170)
-        )
-        val staredPlaces = listOf(
-            LatLng(38.6642, -9.07666),
-            LatLng(1.282, 103.864),
-            LatLng( 1.319, 103.706),
-            LatLng( 1.249, 103.830),
-            LatLng( 1.3138, 103.8159)
-        )
-        for(latLng in myPlaces){
+        //val myPlaces = listOf(
+        //    LatLng(38.736946, -9.142685),
+        //    LatLng( 37.426, -122.163),
+        //    LatLng(37.430, -122.173),
+        //    LatLng(37.444, -122.170)
+        //)
+        //val staredPlaces = listOf(
+        //    LatLng(38.6642, -9.07666),
+        //    LatLng(1.282, 103.864),
+        //    LatLng( 1.319, 103.706),
+        //    LatLng( 1.249, 103.830),
+        //    LatLng( 1.3138, 103.8159)
+        //)
+
+        for(pharmacy in pharmaciesList){
+            var latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
             addMarker(latLng)
         }
-        for(latLng in staredPlaces){
-            addStarMarker(latLng)
+        //for(latLng in staredPlaces){
+        //    addStarMarker(latLng)
+        //}
+    }
+
+    private fun eventChangeListener() {
+        db = Firebase.firestore
+        db.collection("pharmacies").get().
+            addOnSuccessListener {
+            if (!it.isEmpty) {
+                for (data in it.documents) {
+                    val pharmacy: PharmacyMetaData? = data.toObject(PharmacyMetaData::class.java)
+                    if (pharmacy != null) {
+                        pharmaciesList.add(pharmacy)
+                    }
+                }
+                markPlaces()
+            }
+        }.
+        addOnFailureListener {
+            Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
         }
     }
 
