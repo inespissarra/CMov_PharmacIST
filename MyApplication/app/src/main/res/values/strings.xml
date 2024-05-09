@@ -11,4 +11,5 @@
     <string name="name_field">Name*</string>
     <string name="address_field">Address*</string>
     <string name="photo_field">Add photo*</string>
+    <string name="register">Register</string>
 </resources>
