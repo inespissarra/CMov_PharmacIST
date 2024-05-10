@@ -12,4 +12,20 @@
     <string name="address_field">Address*</string>
     <string name="photo_field">Add photo*</string>
     <string name="register">Register</string>
+    <string name="available_stock">Available Stock:</string>
+    <string name="favorite_star">Favorite star</string>
+    <string name="go_to_pharmacy">Go to pharmacy</string>
+    <string name="manage_stock">Manage stock</string>
+    <string name="stock_list">Stock list</string>
+    <string name="pharmacy_image">Pharmacy image</string>
+    <string name="buy">Buy</string>
+    <string name="ok">OK</string>
+    <string name="successful">SUCCESSFUL</string>
+    <string name="unsuccessful">UNSUCCESSFUL</string>
+    <string name="submit">Submit</string>
+    <string name="submit_another_image">Alternatively, you may submit another image</string>
+    <string name="add">add</string>
+    <string name="register_a_new_medicine">Register a new medicine\n</string>
+    <string name="purpose_field">Purpose*</string>
+    <string name="amount_field">Amount*</string>
 </resources>

@@ -3,9 +3,12 @@ package pt.ulisboa.tecnico.cmov.myapplication
 import android.os.Parcel
 import android.os.Parcelable
 
-data class MedicineMetaData(var name: String? = null, var image: String? = null) : Parcelable {
+data class MedicineMetaData(var name: String? = null, var image: String? = null,
+    var stock: Int? = null, var pharmacy: String? = null) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
+        parcel.readString(),
+        parcel.readInt(),
         parcel.readString()
     ) {
     }
@@ -13,6 +16,8 @@ data class MedicineMetaData(var name: String? = null, var image: String? = null)
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
         parcel.writeString(image)
+        if (stock != null) parcel.writeInt(stock!!)
+        parcel.writeString(pharmacy)
     }
 
     override fun describeContents(): Int {
