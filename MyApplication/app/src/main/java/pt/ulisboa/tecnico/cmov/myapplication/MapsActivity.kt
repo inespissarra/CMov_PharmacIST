@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.widget.ImageButton
 import android.widget.Toast
@@ -160,6 +159,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         recenterLocation()
 
+        mMap.setOnMarkerClickListener { marker ->
+            val pharmacyName = marker.title
+            val intent = Intent(applicationContext, PharmacyInformationPanelActivity::class.java)
+            intent.putExtra("pharmacyName", pharmacyName)
+            startActivity(intent)
+            false
+        }
+
         pharmaciesList = ArrayList()
         eventChangeListener()
     }
@@ -167,7 +174,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     private fun markPlaces(){
         for(pharmacy in pharmaciesList){
             var latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
-            addMarker(latLng)
+            addMarker(pharmacy.name!!, latLng)
         }
         //for(latLng in staredPlaces){
         //    addStarMarker(latLng)
@@ -193,11 +200,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         }
     }
 
-    private fun addMarker(latLng: LatLng){
+    private fun addMarker(name:String, latLng: LatLng){
         mMap.addMarker(MarkerOptions()
             .position(latLng)
-            .title("Marker")
+            .title(name)
             .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)))
+
     }
 
     private fun addStarMarker(latLng: LatLng){
