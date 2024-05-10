@@ -81,6 +81,8 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     // implementation("com.google.firebase:firebase-auth")
 
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation("com.google.firebase:firebase-storage")
 
     // Declare the dependency for the Cloud Firestore library
     // When using the BoM, you don't specify versions in Firebase library dependencies

@@ -63,6 +63,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     override fun onResume() {
         super.onResume()
         createBottomNavigation()
+        updatePharmacies()
+    }
+
+    private fun updatePharmacies() {
+        pharmaciesList = ArrayList()
+        eventChangeListener() // TODO fazer algo mais eficiente
     }
 
     private fun createMapFragment() {
@@ -159,20 +165,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     }
 
     private fun markPlaces(){
-        //val myPlaces = listOf(
-        //    LatLng(38.736946, -9.142685),
-        //    LatLng( 37.426, -122.163),
-        //    LatLng(37.430, -122.173),
-        //    LatLng(37.444, -122.170)
-        //)
-        //val staredPlaces = listOf(
-        //    LatLng(38.6642, -9.07666),
-        //    LatLng(1.282, 103.864),
-        //    LatLng( 1.319, 103.706),
-        //    LatLng( 1.249, 103.830),
-        //    LatLng( 1.3138, 103.8159)
-        //)
-
         for(pharmacy in pharmaciesList){
             var latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
             addMarker(latLng)

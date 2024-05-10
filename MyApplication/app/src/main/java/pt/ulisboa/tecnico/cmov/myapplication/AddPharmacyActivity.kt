@@ -16,22 +16,27 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 
 
 class AddPharmacyActivity : AppCompatActivity() {
 
-    private lateinit var imageIv : ImageView
-    private lateinit var textIv: TextView
-    private lateinit var location: LatLng
-    private lateinit var textLocation: TextView
+    private lateinit var db: FirebaseFirestore
+
+    private lateinit var pharmacyPhoto : ImageView
+    private lateinit var pharmacyPhotoName: TextView
+    private lateinit var pharmacyLocation: LatLng
+    private lateinit var pharmacyLocationName: TextView
+    private lateinit var pharmacyName: EditText
     private var locationSelected: Int = 0
 
         companion object{
@@ -49,9 +54,10 @@ class AddPharmacyActivity : AppCompatActivity() {
 
         createBottomNavigation()
 
-        imageIv = findViewById(R.id.photo)
-        textIv = findViewById<TextView>(R.id.photoField)!!
-        textLocation = findViewById<TextView>(R.id.addressField)!!
+        pharmacyPhoto = findViewById(R.id.photo)
+        pharmacyPhotoName = findViewById<TextView>(R.id.photoField)!!
+        pharmacyLocationName = findViewById<TextView>(R.id.addressField)!!
+        pharmacyName = findViewById<EditText>(R.id.nameField)!!
 
         val cameraButton: ImageButton = findViewById(R.id.cameraButton)
         cameraButton.setOnClickListener{
@@ -97,8 +103,8 @@ class AddPharmacyActivity : AppCompatActivity() {
     private fun selectLocation() {
         val intent = Intent(applicationContext, SelectLocationActivity::class.java)
         if(locationSelected==1){
-            intent.putExtra("lat", location.latitude)
-            intent.putExtra("lng", location.longitude)
+            intent.putExtra("lat", pharmacyLocation.latitude)
+            intent.putExtra("lng", pharmacyLocation.longitude)
         }
         locationActivityResultLauncher.launch(intent)
     }
@@ -113,9 +119,9 @@ class AddPharmacyActivity : AppCompatActivity() {
 
             val lat = data!!.getDoubleExtra("latitude", Double.MIN_VALUE)
             val lng = data.getDoubleExtra("longitude", Double.MIN_VALUE)
-            location = LatLng(lat, lng)
+            pharmacyLocation = LatLng(lat, lng)
             val name  = data.getStringExtra("name")
-            textLocation.setText("Location: $name")
+            pharmacyLocationName.setText("Location: $name")
             locationSelected = 1
         }
         else{
@@ -125,18 +131,37 @@ class AddPharmacyActivity : AppCompatActivity() {
 
 
     private fun registerPharmacy() {
-        val name: EditText = findViewById(R.id.nameField)
-        //val address: EditText = findViewById(R.id.addressField)
-        if(name.text.toString().takeIf { it.isNotBlank() }!=null
-            //&& address.text.toString().takeIf { it.isNotBlank() }!=null
-            && textIv.text.toString().takeIf { it.isNotBlank() }!=null) {
-            showToast("Successfully registered pharmacy")
+        var name = pharmacyName.text.toString()
+        var locationName = pharmacyLocationName.text.toString()
+        if(name.takeIf { it.isNotBlank() }!=null
+            && locationName.takeIf { it.isNotBlank() }!=null
+            && pharmacyPhotoName.text.toString().takeIf { it.isNotBlank() }!=null
+        ){
+            //uploadImage(name)
+
+            db = Firebase.firestore
+            val pharmacy = hashMapOf(
+                "name" to name,
+                "locationName" to locationName,
+                "latitude" to pharmacyLocation.latitude,
+                "longitude" to pharmacyLocation.longitude
+            )
+            db.collection("pharmacies").document(name)
+                .set(pharmacy)
+                .addOnSuccessListener { showToast("Successfully registered pharmacy")}
+                .addOnFailureListener { e -> showToast("Something went wrong :( " + e)}
             finish()
         }
         else{
             showToast("Please fill in all fields with (*)")
         }
     }
+
+//    private fun uploadImage(name: String) {
+//        var storage = Firebase.storage
+//        val storageReference = storage.reference
+//        storageReference.putFile(imageUri!!)
+//    }
 
     private fun createBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
@@ -183,11 +208,11 @@ class AddPharmacyActivity : AppCompatActivity() {
             val data = result.data
 
             Log.d(TAG, "cameraActivityResult: imageUri: $imageUri")
-            imageIv.setImageURI(imageUri)
-            textIv.setText("$imageUri")
+            pharmacyPhoto.setImageURI(imageUri)
+            pharmacyPhotoName.setText("$imageUri")
 
             val name = imageUri?.path?.substringAfterLast('/', "")
-            textIv.setText(" Name: " + name)
+            pharmacyPhotoName.setText(" Name: " + name)
         }
         else{
             Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
@@ -209,10 +234,10 @@ class AddPharmacyActivity : AppCompatActivity() {
 
             imageUri = data?.data
             Log.d(TAG, ": imageUri: $imageUri")
-            imageIv.setImageURI(imageUri)
+            pharmacyPhoto.setImageURI(imageUri)
 
             val name = imageUri?.path?.substringAfterLast('/', "")
-            textIv.setText(" Name: " + name)
+            pharmacyPhotoName.setText(" Name: " + name)
         }
         else{
             Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
