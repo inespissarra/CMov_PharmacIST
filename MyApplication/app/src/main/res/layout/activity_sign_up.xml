@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="48dp"
-        android:layout_marginTop="168dp"
+        android:layout_marginTop="130dp"
         android:text="Sign up"
         android:textSize="40sp"
         android:textStyle="bold"
@@ -99,7 +99,7 @@
 
     <Button
         android:id="@+id/signUpButton"
-        android:layout_width="168dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp"
         android:background="@drawable/button_green_background"
