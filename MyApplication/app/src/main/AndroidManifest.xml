@@ -9,14 +9,12 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32"
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
+        tools:ignore="SelectedPhotoAccess" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -46,10 +44,14 @@
             android:label="@string/title_activity_maps" />
         <activity android:name=".MedicineActivity" />
         <activity android:name=".ProfileActivity" />
-        <activity android:name=".AddStockActivity" />
+        <activity android:name=".ScanBarcodeActivity" />
         <activity android:name=".AddPharmacyActivity" />
         <activity android:name=".SelectLocationActivity" />
         <activity android:name=".MedicineInformationPanelActivity" />
+        <activity android:name=".AddMedicineActivity" />
+        <activity android:name=".AddStockActivity" />
+        <activity android:name=".BuyMedicineActivity" />
+        <activity android:name=".PharmacyInformationPanelActivity" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
