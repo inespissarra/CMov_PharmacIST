@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.ImageButton
 import android.widget.Toast
@@ -161,8 +162,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         mMap.setOnMarkerClickListener { marker ->
             val pharmacyName = marker.title
+            val pharmacy = pharmaciesList.find { it.name == pharmacyName }
             val intent = Intent(applicationContext, PharmacyInformationPanelActivity::class.java)
-            intent.putExtra("pharmacyName", pharmacyName)
+            intent.putExtra("pharmacy", pharmacy)
             startActivity(intent)
             false
         }

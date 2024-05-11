@@ -55,7 +55,6 @@ class MedicineActivity : AppCompatActivity() {
         //recyclerView.adapter = adapter
 
         adapter.onItemClick = {
-            Log.i("click", "onclick")
             val intent = Intent(this, MedicineInformationPanelActivity::class.java)
             intent.putExtra("medicine", it)
             startActivity(intent)

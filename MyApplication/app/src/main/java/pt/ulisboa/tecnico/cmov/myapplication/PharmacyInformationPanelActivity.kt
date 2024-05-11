@@ -47,12 +47,13 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_pharmacy_information_panel)
 
-        createPharmacyName()
+        //createPharmacyName()
+        getDataFromIntent()
 
         queryDB()
 
-        createPharmacyImage()
-        createPharmacyAddress()
+        /*createPharmacyImage()
+        createPharmacyAddress()*/
         createRatingBar()
 
         // createFavoriteStar()
@@ -62,11 +63,9 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         createManageStock()
 
         auth = Firebase.auth
-        Log.d(TAG, "here")
         if (auth.currentUser != null) {
             Log.d(TAG, "curretn user not null")
             checkIsFavorite()
-            Log.d(TAG, "isFavorite-1: $isInUsersFavorite")
         }
 
         // handle click, add/remove favorite
@@ -74,16 +73,13 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         favoriteButton.setOnClickListener {
             // only add if user is logged in
             if (auth.currentUser != null && auth.uid != null) {
-                Log.d(TAG, "isFavorite0: $isInUsersFavorite")
                 checkIsFavorite()
-                Log.d(TAG, "isFavorite1: $isInUsersFavorite")
                 if (isInUsersFavorite) {
                     removeFromFavorite()
                 }
                 else {
                     addToFavorite()
                 }
-                Log.d(TAG, "isFavorite2: $isInUsersFavorite")
                 it.isSelected = isInUsersFavorite // change the icon
             }
             else {
@@ -95,9 +91,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     }
 
     private fun addToFavorite() {
-        val userInformation: DocumentReference = db.collection("users").document(auth.uid!!)
         val data = hashMapOf("name" to pharmacyName)
-        val favoriteList = db.collection("users").document(auth.uid!!).get()
         db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
             .add(data)
             .addOnSuccessListener {
@@ -151,6 +145,21 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             .addOnFailureListener { e ->
                 Log.d(TAG, "Error deleting document: $e")
             }
+    }
+
+    private fun getDataFromIntent() {
+        Log.d(TAG, "here")
+        val pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")
+        if (pharmacy != null) {
+            val pharmacyName : TextView = findViewById(R.id.pharmacyName)
+            val pharmacyAddress : TextView = findViewById(R.id.pharmacyLocation)
+            //val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
+
+            pharmacyName.text = pharmacy.name
+            pharmacyAddress.text = pharmacy.locationName
+            Log.d(TAG, pharmacyName.text.toString())
+            //Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
+        }
     }
 
     private fun createPharmacyName() {

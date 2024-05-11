@@ -3,11 +3,12 @@ package pt.ulisboa.tecnico.cmov.myapplication
 import android.os.Parcel
 import android.os.Parcelable
 
-data class PharmacyMetaData(var name: String? = null, var latitude: Double? = null, var longitude: Double? = null, var picture: String? = null) : Parcelable {
+data class PharmacyMetaData(var name: String? = null, var latitude: Double? = null, var longitude: Double? = null, var picture: String? = null, var locationName: String? = null) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
-        parcel.readDouble(),
-        parcel.readDouble(),
+        parcel.readValue(Double::class.java.classLoader) as Double?,
+        parcel.readValue(Double::class.java.classLoader) as Double?,
+        parcel.readString(),
         parcel.readString()
     ){
     }
@@ -17,6 +18,7 @@ data class PharmacyMetaData(var name: String? = null, var latitude: Double? = nu
         parcel.writeValue(latitude)
         parcel.writeValue(longitude)
         parcel.writeString(picture)
+        parcel.writeString(locationName)
     }
 
     override fun describeContents(): Int {
