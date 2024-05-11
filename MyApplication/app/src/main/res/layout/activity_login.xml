@@ -12,7 +12,7 @@
         android:id="@+id/ApplicationName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="144dp"
+        android:layout_marginTop="136dp"
         android:text="@string/application"
         android:textColor="?attr/titleTextColor"
         android:textSize="48sp"
@@ -21,45 +21,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!--<EditText
-        android:id="@+id/loginEmail"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="64dp"
-        android:background="@drawable/edit_text_background"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
-        android:padding="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ApplicationName" />
-
-    <EditText
-        android:id="@+id/loginPassword"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="64dp"
-        android:background="@drawable/edit_text_background"
-        android:hint="Password"
-        android:inputType="textEmailAddress"
-        android:padding="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/loginEmail" />-->
-
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/loginEmailLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="64dp"
         android:layout_marginEnd="64dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="72dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ApplicationName"
@@ -102,7 +70,7 @@
         android:id="@+id/loginButton"
         android:layout_width="168dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="72dp"
+        android:layout_marginTop="64dp"
         android:background="@drawable/button_green_background"
         android:padding="18dp"
         android:text="Login"
@@ -117,7 +85,7 @@
         android:id="@+id/signUpText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="40dp"
         android:text="Not registered yet? Sign up >"
         android:textSize="16sp"
         android:textColor="@color/brown_2"
@@ -130,7 +98,7 @@
         android:id="@+id/loginGuest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:text="Login as guest >"
         android:textColor="@color/brown_2"
         android:textSize="16sp"
@@ -138,6 +106,5 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/signUpText" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

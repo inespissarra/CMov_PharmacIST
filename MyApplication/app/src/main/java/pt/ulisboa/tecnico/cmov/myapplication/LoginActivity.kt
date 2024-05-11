@@ -1,9 +1,7 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
 import android.content.Intent
-import android.nfc.Tag
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -23,7 +21,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityLoginBinding.inflate(layoutInflater)
-        //setContentView(R.layout.activity_login)
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -50,25 +47,23 @@ class LoginActivity : AppCompatActivity() {
             finish()
         }
 
+        binding.loginGuest.setOnClickListener {
+            startActivity(Intent(this, MapsActivity::class.java))
+            finish()
+        }
+
     }
 
     private fun loginWithEmail(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    // Log.d(TAG, "signInWithEmail:success")
-                    // val user = auth.currentUser
-                    // updateUI(user)
                     Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, MapsActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else {
-                    // If sign in fails, display a message to the user.
-                    //Log.w(TAG, "signInWithEmail:failure", task.exception)
                     Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
-                    // updateUI(null)
                 }
             }
 
