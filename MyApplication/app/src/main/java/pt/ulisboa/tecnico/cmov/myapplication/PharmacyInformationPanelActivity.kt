@@ -7,14 +7,19 @@ import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -32,6 +37,8 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private var pharmacyAddress: String? = null
     private var isFavorite: Boolean = false
     private var medicineStock: ArrayList<MedicineMetaData> = ArrayList()
+    private lateinit var auth: FirebaseAuth
+    private var isInUsersFavorite = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,13 +55,102 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         createPharmacyAddress()
         createRatingBar()
 
-        createFavoriteStar()
+        // createFavoriteStar()
         createGoToPharmacy()
 
         createStockList()
         createManageStock()
 
+        auth = Firebase.auth
+        Log.d(TAG, "here")
+        if (auth.currentUser != null) {
+            Log.d(TAG, "curretn user not null")
+            checkIsFavorite()
+            Log.d(TAG, "isFavorite-1: $isInUsersFavorite")
+        }
+
+        // handle click, add/remove favorite
+        val favoriteButton : ImageButton = findViewById(R.id.favoriteIcon)
+        favoriteButton.setOnClickListener {
+            // only add if user is logged in
+            if (auth.currentUser != null && auth.uid != null) {
+                Log.d(TAG, "isFavorite0: $isInUsersFavorite")
+                checkIsFavorite()
+                Log.d(TAG, "isFavorite1: $isInUsersFavorite")
+                if (isInUsersFavorite) {
+                    removeFromFavorite()
+                }
+                else {
+                    addToFavorite()
+                }
+                Log.d(TAG, "isFavorite2: $isInUsersFavorite")
+                it.isSelected = isInUsersFavorite // change the icon
+            }
+            else {
+                Toast.makeText(this, "You're not logged in", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         Log.d(TAG, "onCreate finished")
+    }
+
+    private fun addToFavorite() {
+        val userInformation: DocumentReference = db.collection("users").document(auth.uid!!)
+        val data = hashMapOf("name" to pharmacyName)
+        val favoriteList = db.collection("users").document(auth.uid!!).get()
+        db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
+            .add(data)
+            .addOnSuccessListener {
+                isInUsersFavorite = true
+                Log.d(TAG, "addToFavorite: added to favorite")
+            }
+            .addOnFailureListener { e ->
+                Log.d(TAG, "addToFavorite: failed to add to favorite due to ${e.message}")
+                Toast.makeText(this, "Failed to add to favorite due to ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun removeFromFavorite() {
+        db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
+            .whereEqualTo("name", pharmacyName)
+            .get()
+            .addOnSuccessListener {documents ->
+                if (!documents.isEmpty) {
+                    deleteDocument(documents.documents.first().id)
+                    isInUsersFavorite = false
+                    Log.d(TAG, "removeFromFavorite: removed from favorite")
+                }
+                else {
+                    Log.d(TAG, "removeFromFavorite: No pharmacy matched")
+                    Toast.makeText(this, "No pharmacy matched", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener {e ->
+                Log.d(TAG, "removeFromFavorite: Failed to remove favorite")
+                Toast.makeText(this, "Failed to remove favorite due to ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun checkIsFavorite() {
+        db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
+            .whereEqualTo("name", pharmacyName)
+            .get()
+            .addOnSuccessListener {documents ->
+                isInUsersFavorite = !documents.isEmpty
+                findViewById<ImageButton>(R.id.favoriteIcon).isSelected = isInUsersFavorite
+            }
+    }
+
+    private fun deleteDocument(documentId: String) {
+        val docRef = db.collection("users").document(auth.uid!!).collection("favorite_pharmacies").document(documentId)
+
+        docRef.delete()
+            .addOnSuccessListener {
+                Log.d(TAG, "Document with ID $documentId successfully deleted!")
+            }
+            .addOnFailureListener { e ->
+                Log.d(TAG, "Error deleting document: $e")
+            }
     }
 
     private fun createPharmacyName() {
@@ -108,7 +204,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     }
 
     private fun createFavoriteStar() {
-        val favoriteStar: ImageView = findViewById(R.id.favoriteStar)
+        val favoriteStar: ImageView = findViewById(R.id.favoriteIcon)
         favoriteStar.setOnClickListener {
             isFavorite = !isFavorite
             // TODO: Update database
