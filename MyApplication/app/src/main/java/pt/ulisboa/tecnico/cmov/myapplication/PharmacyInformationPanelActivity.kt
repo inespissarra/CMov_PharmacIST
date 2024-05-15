@@ -80,7 +80,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 else {
                     addToFavorite()
                 }
-                it.isSelected = isInUsersFavorite // change the icon
             }
             else {
                 Toast.makeText(this, "You're not logged in", Toast.LENGTH_SHORT).show()
@@ -96,6 +95,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             .add(data)
             .addOnSuccessListener {
                 isInUsersFavorite = true
+                findViewById<ImageButton>(R.id.favoriteIcon).isSelected = true
                 Log.d(TAG, "addToFavorite: added to favorite")
             }
             .addOnFailureListener { e ->
@@ -112,6 +112,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 if (!documents.isEmpty) {
                     deleteDocument(documents.documents.first().id)
                     isInUsersFavorite = false
+                    findViewById<ImageButton>(R.id.favoriteIcon).isSelected = false
                     Log.d(TAG, "removeFromFavorite: removed from favorite")
                 }
                 else {
@@ -151,13 +152,15 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         Log.d(TAG, "here")
         val pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")
         if (pharmacy != null) {
-            val pharmacyName : TextView = findViewById(R.id.pharmacyName)
-            val pharmacyAddress : TextView = findViewById(R.id.pharmacyLocation)
+            val name : TextView = findViewById(R.id.pharmacyName)
+            val address : TextView = findViewById(R.id.pharmacyLocation)
             //val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
 
-            pharmacyName.text = pharmacy.name
-            pharmacyAddress.text = pharmacy.locationName
-            Log.d(TAG, pharmacyName.text.toString())
+            name.text = pharmacy.name
+            pharmacyName = pharmacy.name
+            address.text = pharmacy.locationName
+            pharmacyAddress = pharmacy.locationName
+            Log.d(TAG, pharmacyName.toString())
             //Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
         }
     }
