@@ -6,6 +6,7 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -25,12 +26,16 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
+import com.google.firebase.storage.FirebaseStorage
+import java.net.URL
+
+//import com.google.firebase.storage.ktx.storage
 
 
 class AddPharmacyActivity : AppCompatActivity() {
 
     private lateinit var db: FirebaseFirestore
+    private lateinit var storage: FirebaseStorage
 
     private lateinit var pharmacyPhoto : ImageView
     private lateinit var pharmacyPhotoName: TextView
@@ -46,7 +51,7 @@ class AddPharmacyActivity : AppCompatActivity() {
             private const val TAG = "MAIN_TAG"
         }
 
-        private var imageUri: Uri?= null
+    private var imageUri: Uri?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +70,7 @@ class AddPharmacyActivity : AppCompatActivity() {
                 pickImageCamera()
             }
             else{
-                requestCameraPermission()
+                requestCameraPermissions()
             }
         }
 
@@ -75,7 +80,7 @@ class AddPharmacyActivity : AppCompatActivity() {
                 pickImageCamera()
             }
             else{
-                requestCameraPermission()
+                requestCameraPermissions()
             }
         }
 
@@ -85,7 +90,7 @@ class AddPharmacyActivity : AppCompatActivity() {
                 pickImageGallery()
             }
             else{
-                requestStoragePermission()
+                requestStoragePermissions()
             }
         }
 
@@ -129,6 +134,11 @@ class AddPharmacyActivity : AppCompatActivity() {
         }
     }
 
+    interface UploadCallback {
+        fun onSuccess(downloadUrl: String)
+        fun onFailure(exception: Exception)
+    }
+
 
     private fun registerPharmacy() {
         var name = pharmacyName.text.toString()
@@ -137,31 +147,55 @@ class AddPharmacyActivity : AppCompatActivity() {
             && locationName.takeIf { it.isNotBlank() }!=null
             && pharmacyPhotoName.text.toString().takeIf { it.isNotBlank() }!=null
         ){
-            //uploadImage(name)
+            uploadImage(name, object : UploadCallback {
+                override fun onSuccess(downloadUrl: String) {
 
-            db = Firebase.firestore
-            val pharmacy = hashMapOf(
-                "name" to name,
-                "locationName" to locationName,
-                "latitude" to pharmacyLocation.latitude,
-                "longitude" to pharmacyLocation.longitude
-            )
-            db.collection("pharmacies").document(name)
-                .set(pharmacy)
-                .addOnSuccessListener { showToast("Successfully registered pharmacy")}
-                .addOnFailureListener { e -> showToast("Something went wrong :( " + e)}
-            finish()
+                    db = Firebase.firestore
+                    val pharmacy = hashMapOf(
+                        "name" to name,
+                        "locationName" to locationName,
+                        "latitude" to pharmacyLocation.latitude,
+                        "longitude" to pharmacyLocation.longitude,
+                        "picture" to downloadUrl
+                    )
+                    db.collection("pharmacies").document(name)
+                        .set(pharmacy)
+                        .addOnSuccessListener { showToast("Successfully registered pharmacy") }
+                        .addOnFailureListener { e -> showToast("Something went wrong :( " + e) }
+                    finish()
+                }
+                override fun onFailure(exception: Exception) {
+                    showToast("Something went wrong uploading the image")
+                }
+            })
         }
         else{
             showToast("Please fill in all fields with (*)")
         }
     }
 
-//    private fun uploadImage(name: String) {
-//        var storage = Firebase.storage
-//        val storageReference = storage.reference
-//        storageReference.putFile(imageUri!!)
-//    }
+    private fun uploadImage(name: String, callback: UploadCallback) {
+        storage = FirebaseStorage.getInstance()
+        val storageReference = storage.reference
+        val imageRef = storageReference.child("pharmacies/$name.jpg");
+        val uploadTask = imageRef.putFile(imageUri!!)
+
+        // Listen for success or failure
+        uploadTask.addOnSuccessListener { taskSnapshot ->
+            // Handle successful upload
+            imageRef.downloadUrl.addOnSuccessListener { uri ->
+                val downloadUrl = uri.toString()
+                callback.onSuccess(downloadUrl)
+                Log.d("here", "HERE${downloadUrl.toString()}")
+            }.addOnFailureListener { exception ->
+                // Handle failed download URL retrieval
+                callback.onFailure(exception)
+            }
+        }.addOnFailureListener { exception ->
+            // Handle failed upload
+            callback.onFailure(exception)
+        }
+    }
 
     private fun createBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
@@ -205,7 +239,6 @@ class AddPharmacyActivity : AppCompatActivity() {
     ){
             result ->
         if(result.resultCode == Activity.RESULT_OK){
-            val data = result.data
 
             Log.d(TAG, "cameraActivityResult: imageUri: $imageUri")
             pharmacyPhoto.setImageURI(imageUri)
@@ -237,31 +270,45 @@ class AddPharmacyActivity : AppCompatActivity() {
             pharmacyPhoto.setImageURI(imageUri)
 
             val name = imageUri?.path?.substringAfterLast('/', "")
-            pharmacyPhotoName.setText(" Name: " + name)
+            pharmacyPhotoName.setText(" Name: $name")
         }
         else{
             Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
         }
     }
 
-   private fun checkCameraPermissions(): Boolean{
-       val resultCamera = (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
-       val resultStorage = (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-       return resultCamera && resultStorage
-   }
-
-   private fun requestCameraPermission(){
-       ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE), CAMERA_REQUEST_CODE)
-       return
-   }
-
-    private fun checkStoragePermissions(): Boolean{
-        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    private fun checkCameraPermissions(): Boolean {
+        return (ContextCompat.checkSelfPermission(this,
+            android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
 
-    private fun requestStoragePermission(){
-        ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), STORAGE_REQUEST_CODE)
-        return
+    private fun requestCameraPermissions() {
+        ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.CAMERA),
+            CAMERA_REQUEST_CODE
+        )
+    }
+
+    private fun checkStoragePermissions(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED
+        else
+            ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this,
+                arrayOf(android.Manifest.permission.READ_MEDIA_IMAGES),
+                STORAGE_REQUEST_CODE
+            )
+        } else {
+            ActivityCompat.requestPermissions(this,
+                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                STORAGE_REQUEST_CODE
+            )
+        }
     }
 
    override fun onRequestPermissionsResult(

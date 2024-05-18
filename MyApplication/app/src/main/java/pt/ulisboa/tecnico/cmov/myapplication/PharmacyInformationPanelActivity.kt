@@ -154,14 +154,14 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         if (pharmacy != null) {
             val name : TextView = findViewById(R.id.pharmacyName)
             val address : TextView = findViewById(R.id.pharmacyLocation)
-            //val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
+            val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
 
             name.text = pharmacy.name
             pharmacyName = pharmacy.name
             address.text = pharmacy.locationName
             pharmacyAddress = pharmacy.locationName
             Log.d(TAG, pharmacyName.toString())
-            //Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
+            Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
         }
     }
 

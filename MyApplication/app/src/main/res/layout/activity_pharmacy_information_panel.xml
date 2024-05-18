@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="23dp"
     android:background="@color/beige_1">
 
     <ScrollView
@@ -21,7 +22,7 @@
                 android:id="@+id/pharmacyImage"
                 android:layout_width="wrap_content"
                 android:layout_height="180dp"
-                android:scaleType="centerCrop"
+                android:scaleType="fitXY"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/frameLayout"
@@ -172,6 +173,19 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
              -->
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottomNavigationView"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bottom_nav_background"
+                app:itemIconSize="30dp"
+                app:itemIconTint="@drawable/bottom_nav_selector"
+                app:itemTextColor="@color/green_4"
+                app:labelVisibilityMode="selected"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:menu="@menu/bottom_nav_bar" />
         </LinearLayout>
     </ScrollView>
 
