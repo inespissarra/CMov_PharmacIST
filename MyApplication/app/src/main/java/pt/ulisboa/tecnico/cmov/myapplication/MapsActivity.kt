@@ -20,6 +20,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
@@ -28,9 +29,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-
+import com.google.gson.Gson
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.IOException
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
+
+    private val TAG = "MapsActivity"
 
     private lateinit var db: FirebaseFirestore
 
@@ -46,6 +52,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Log.d(TAG, "Starting onCreate")
+
         setContentView(R.layout.activity_maps)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -58,13 +67,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         createSearchBar()
         createBottomNavigation()
+
+        Log.d(TAG, "Finished onCreate")
     }
 
+    /*
     override fun onResume() {
         super.onResume()
+        Log.d(TAG, "Starting onResume")
         createBottomNavigation()
         updatePharmacies()
+        Log.d(TAG, "Finished onResume")
     }
+    */
 
     private fun updatePharmacies() {
         pharmaciesList = ArrayList()
@@ -175,7 +190,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     private fun markPlaces(){
         for(pharmacy in pharmaciesList){
-            var latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
+            val latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
             addMarker(pharmacy.name!!, latLng)
         }
         //for(latLng in staredPlaces){
@@ -195,6 +210,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                     }
                 }
                 markPlaces()
+                val pharmacyName = intent.getStringExtra("pharmacyName")
+                // Intent from PharmacyInformationPanelActivity to draw directions
+                handleDirection(pharmacyName)
             }
         }.
         addOnFailureListener {
@@ -216,4 +234,138 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
             .title("Star Marker")
             .icon(BitmapDescriptorFactory.fromResource(R.drawable.star_marker)))
     }
+
+    private fun handleDirection(pharmacyName: String?) {
+        if (pharmacyName != null) {
+            Log.d(TAG, "Detected intent for directions, getting location of ${pharmacyName}...")
+            val pharmacy = pharmaciesList.find { it.name == pharmacyName }
+            if (pharmacy != null) {
+                if (pharmacy.latitude != null && pharmacy.longitude != null) {
+                    requestDirections(
+                        LatLng(pharmacy.latitude!!, pharmacy.longitude!!),
+                        LatLng(currentLocation.latitude, currentLocation.longitude)
+                    )
+                } else {
+                    if (pharmacy.latitude == null) {
+                        Log.e(TAG, "Pharmacy has no latitude}")
+                        Toast.makeText(this, "Pharmacy has no latitude", Toast.LENGTH_SHORT).show()
+                    }
+                    if (pharmacy.longitude == null) {
+                        Log.e(TAG, "Pharmacy has no longitude")
+                        Toast.makeText(this, "Pharmacy has no longitude", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            else {
+                Log.e(TAG, "Pharmacy not found")
+                Toast.makeText(this, "Pharmacy not found", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun requestDirections(origin: LatLng, destination: LatLng) {
+        val apiKey = getString(R.string.google_map_api_key)
+        val url = "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=$apiKey"
+
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+
+        Log.d(TAG, "Making direction request to API")
+
+        client.newCall(request).enqueue(object : okhttp3.Callback {
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                Log.e(TAG, "Request failed: $e")
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                response.body?.let {
+                    val responseData = it.string()
+                    Log.d(TAG, "Request response: $responseData")
+                    val directionsResponse = Gson().fromJson(responseData, DirectionsResponse::class.java)
+                    runOnUiThread {
+                        drawPath(directionsResponse)
+                    }
+                }
+            }
+        })
+    }
+
+    private fun drawPath(directionsResponse: DirectionsResponse) {
+        val polylineOptions = PolylineOptions()
+            .clickable(true)
+            .color(R.color.purple_500)
+            .width(10f)
+
+        if (directionsResponse.routes.isEmpty()) {
+            Log.e(TAG, "No routes were found")
+            return
+        }
+        val legs = directionsResponse.routes[0].legs[0]
+        for (step in legs.steps) {
+            val points = decodePoly(step.polyline.points)
+            for (point in points) {
+                polylineOptions.add(point)
+            }
+        }
+
+        mMap.addPolyline(polylineOptions)
+        Log.d(TAG, "Polyline added to map")
+    }
+
+    private fun decodePoly(encoded: String): List<LatLng> {
+        val poly = ArrayList<LatLng>()
+        var index = 0
+        val len = encoded.length
+        var lat = 0
+        var lng = 0
+
+        while (index < len) {
+            var b: Int
+            var shift = 0
+            var result = 0
+            do {
+                b = encoded[index++].code - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lat += dlat
+
+            shift = 0
+            result = 0
+            do {
+                b = encoded[index++].code - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lng += dlng
+
+            val p = LatLng((lat / 1E5), (lng / 1E5))
+            poly.add(p)
+        }
+
+        return poly
+    }
+
+    data class DirectionsResponse(
+        val routes: List<Route>
+    )
+
+    data class Route(
+        val legs: List<Leg>
+    )
+
+    data class Leg(
+        val steps: List<Step>
+    )
+
+    data class Step(
+        val polyline: Polyline
+    )
+
+    data class Polyline(
+        val points: String
+    )
 }

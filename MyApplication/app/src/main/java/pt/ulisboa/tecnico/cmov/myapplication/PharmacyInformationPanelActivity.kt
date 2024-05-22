@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -64,7 +63,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
 
         auth = Firebase.auth
         if (auth.currentUser != null) {
-            Log.d(TAG, "curretn user not null")
+            Log.d(TAG, "current user not null")
             checkIsFavorite()
         }
 
@@ -236,8 +235,8 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         goToPharmacy.setOnClickListener {
             // TODO: Might require changes
             val intent = Intent(this, MapsActivity::class.java)
-            intent.putExtra("pharmacy", pharmacyName)
-            intent.putExtra("address", pharmacyAddress)
+            intent.putExtra("pharmacyName", pharmacyName)
+            intent.putExtra("pharmacyAddress", pharmacyAddress)
             this.startActivity(intent)
         }
     }

@@ -72,6 +72,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
             if (imageUri != null) {
                 val bitmap: Bitmap? = getBitmapFromURI(imageUri!!)
                 if (bitmap != null) processImageForBarcode(bitmap)
+                else showToast("Invalid bitmap from image")
             }
         }
 
@@ -100,21 +101,27 @@ class ScanBarcodeActivity : AppCompatActivity() {
 
             Log.d(TAG, "Found barcode: Raw value: $rawValue, Value type: $valueType")
 
-            val intent: Intent
             // TODO: Send barcode to db and verify existance of medicine
             if (true) {
                 resultText.text = "Barcode matches existant stock"
                 addRegisterButton.text = "Add stock to medicine"
-                intent = Intent(this, AddStockActivity::class.java)
-                intent.putExtra("medicineName", "Hey") // Add name of medicine
+                addRegisterButton.setOnClickListener {
+                    val intent = Intent(this, AddStockActivity::class.java)
+                    intent.putExtra("pharmacyName", pharmacyName)
+                    intent.putExtra("medicineName", "Hey") // Add name of medicine
+                    this.startActivity(intent)
+                }
             } else {
                 resultText.text = "Barcode doesn't match existant stock"
                 addRegisterButton.text = "Register new medicine"
-                intent = Intent(this, AddMedicineActivity::class.java)
-                intent.putExtra("barcode", rawValue)
+                addRegisterButton.setOnClickListener {
+                    val intent = Intent(this, AddMedicineActivity::class.java)
+                    intent.putExtra("pharmacyName", pharmacyName)
+                    intent.putExtra("medicineName", "Hey") // Add name of medicine
+                    intent.putExtra("barcode", rawValue)
+                    this.startActivity(intent)
+                }
             }
-            intent.putExtra("pharmacyName", pharmacyName)
-            this.startActivity(intent)
         }
     }
 
