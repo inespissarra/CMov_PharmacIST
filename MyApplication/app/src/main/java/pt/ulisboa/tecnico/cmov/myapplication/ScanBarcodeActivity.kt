@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
 import android.app.Activity
-import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,9 +8,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -20,11 +17,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanIntentResult
+import com.journeyapps.barcodescanner.ScanOptions
 
 class ScanBarcodeActivity : AppCompatActivity() {
 
@@ -36,7 +34,6 @@ class ScanBarcodeActivity : AppCompatActivity() {
     }
 
     private var imageUri: Uri?= null
-    private lateinit var imageIv: ImageView
     private lateinit var resultText: TextView
     private lateinit var addRegisterButton: Button
     private var pharmacyName: String? = null
@@ -45,10 +42,6 @@ class ScanBarcodeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scan_barcode)
         Log.d(TAG, "onCreate started")
-
-        imageIv = findViewById(R.id.submittedImage)
-
-        createBottomNavigation()
 
         val scanBtn = findViewById<MaterialButton>(R.id.scanBtn)
         scanBtn.setOnClickListener {
@@ -67,60 +60,52 @@ class ScanBarcodeActivity : AppCompatActivity() {
 
         pharmacyName = intent.getStringExtra("pharmacyName") ?: "ErrorName"
 
-        val submitButton: Button = findViewById(R.id.submitButton)
-        submitButton.setOnClickListener {
-            if (imageUri != null) {
-                val bitmap: Bitmap? = getBitmapFromURI(imageUri!!)
-                if (bitmap != null) processImageForBarcode(bitmap)
-                else showToast("Invalid bitmap from image")
-            }
-        }
-
         Log.d(TAG, "onCreate finished")
     }
 
-    private fun processImageForBarcode(image: Bitmap) {
-        val inputImage = InputImage.fromBitmap(image, 0)
-        val barcodeScanner = BarcodeScanning.getClient()
+    private fun processImageForBarcode(imageUri: Uri?) {
+        if (imageUri != null) {
+            val image: Bitmap? = getBitmapFromURI(imageUri)
+            if (image != null) {
+                val inputImage = InputImage.fromBitmap(image, 0)
+                val barcodeScanner = BarcodeScanning.getClient()
 
-        barcodeScanner.process(inputImage)
-            .addOnSuccessListener { barcodes ->
-                processBarcodes(barcodes)
+                barcodeScanner.process(inputImage)
+                    .addOnSuccessListener { barcodes ->
+                        if (barcodes.isEmpty()){
+                           showToast("Barcode detection failed. Please resubmit an image.")
+                        } else processBarcode(barcodes.first().rawValue!!)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Barcode detection failed: $e")
+                        showToast("Barcode detection failed. Please resubmit an image.")
+                    }
+                return
             }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Barcode detection failed: $e")
-                Toast.makeText(this, "Barcode detection failed. Please " +
-                        "resubmit an image.", Toast.LENGTH_SHORT).show()
-            }
+        }
+        showToast("Invalid image")
     }
 
-    private fun processBarcodes(barcodes: List<Barcode>) {
-        for (barcode in barcodes) {
-            val rawValue = barcode.rawValue
-            val valueType = barcode.valueType
-
-            Log.d(TAG, "Found barcode: Raw value: $rawValue, Value type: $valueType")
-
-            // TODO: Send barcode to db and verify existance of medicine
-            if (true) {
-                resultText.text = "Barcode matches existant stock"
-                addRegisterButton.text = "Add stock to medicine"
-                addRegisterButton.setOnClickListener {
-                    val intent = Intent(this, AddStockActivity::class.java)
-                    intent.putExtra("pharmacyName", pharmacyName)
-                    intent.putExtra("medicineName", "Hey") // Add name of medicine
-                    this.startActivity(intent)
-                }
-            } else {
-                resultText.text = "Barcode doesn't match existant stock"
-                addRegisterButton.text = "Register new medicine"
-                addRegisterButton.setOnClickListener {
-                    val intent = Intent(this, AddMedicineActivity::class.java)
-                    intent.putExtra("pharmacyName", pharmacyName)
-                    intent.putExtra("medicineName", "Hey") // Add name of medicine
-                    intent.putExtra("barcode", rawValue)
-                    this.startActivity(intent)
-                }
+    private fun processBarcode(barcode: String) {
+        // TODO: Send barcode to db and verify existance of medicine
+        if (true) {
+            resultText.text = "Barcode: $barcode\nBarcode matches existant stock"
+            addRegisterButton.text = "Add stock to medicine"
+            addRegisterButton.setOnClickListener {
+                val intent = Intent(this, AddStockActivity::class.java)
+                intent.putExtra("pharmacyName", pharmacyName)
+                intent.putExtra("medicineName", "Hey") // Add name of medicine
+                this.startActivity(intent)
+            }
+        } else {
+            resultText.text = "Barcode: $barcode\nBarcode doesn't match existant stock"
+            addRegisterButton.text = "Register new medicine"
+            addRegisterButton.setOnClickListener {
+                val intent = Intent(this, AddMedicineActivity::class.java)
+                intent.putExtra("pharmacyName", pharmacyName)
+                intent.putExtra("medicineName", "Hey") // Add name of medicine
+                intent.putExtra("barcode", barcode)
+                this.startActivity(intent)
             }
         }
     }
@@ -131,28 +116,24 @@ class ScanBarcodeActivity : AppCompatActivity() {
     }
 
     private fun pickImageCamera(){
-        val contentValues = ContentValues()
-        contentValues.put(MediaStore.Images.Media.TITLE, "Sample Image")
-        contentValues.put(MediaStore.Images.Media.DESCRIPTION, "Sample Image Description")
+        val options = ScanOptions()
+        options.setDesiredBarcodeFormats(ScanOptions.ONE_D_CODE_TYPES)
+        options.setPrompt("Scan a barcode")
+        options.setCameraId(0) // Use a specific camera of the device
 
-        imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-        cameraActivityResultLauncher.launch(intent)
+        options.setBeepEnabled(false)
+        options.setBarcodeImageEnabled(true)
+        barcodeLauncher.launch(options)
     }
 
-    private val cameraActivityResultLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-            result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            Log.d(TAG, "cameraActivityResult: imageUri: $imageUri")
-            imageIv.setImageURI(imageUri)
-
-        }
-        else {
-            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+    // Register the launcher and result handler
+    private val barcodeLauncher = registerForActivityResult<ScanOptions, ScanIntentResult>(
+        ScanContract()
+    ) { result: ScanIntentResult ->
+        if (result.contents == null) {
+            Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
+        } else {
+            processBarcode(result.contents)
         }
     }
 
@@ -168,11 +149,11 @@ class ScanBarcodeActivity : AppCompatActivity() {
             result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val data = result.data
-
             imageUri = data?.data
 
             Log.d(TAG, ": imageUri: $imageUri")
-            imageIv.setImageURI(imageUri)
+
+            processImageForBarcode(imageUri)
         }
         else {
             Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
@@ -229,31 +210,6 @@ class ScanBarcodeActivity : AppCompatActivity() {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                     pickImageGallery()
                 else showToast("Storage permissions are required")
-            }
-        }
-    }
-
-    private fun createBottomNavigation() {
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
-        bottomNavigationView.selectedItemId = R.id.invisible
-        bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
-            when (item.itemId) {
-                R.id.nav_map -> {
-                    startActivity(Intent(applicationContext, MapsActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.nav_medicine -> {
-                    startActivity(Intent(applicationContext, MedicineActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.nav_profile -> {
-                    startActivity(Intent(applicationContext, ProfileActivity::class.java))
-                    finish()
-                    true
-                }
-                else -> false
             }
         }
     }

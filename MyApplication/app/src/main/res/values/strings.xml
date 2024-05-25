@@ -23,9 +23,11 @@
     <string name="successful">SUCCESSFUL</string>
     <string name="unsuccessful">UNSUCCESSFUL</string>
     <string name="submit">Submit</string>
-    <string name="submit_another_image">Alternatively, you may submit another image</string>
+    <string name="scan_again">Alternatively, you can scan again</string>
     <string name="add">add</string>
     <string name="register_a_new_medicine">Register a new medicine\n</string>
     <string name="purpose_field">Purpose*</string>
     <string name="amount_field">Amount*</string>
+    <string name="search_pharmacies_here">Search Pharmacies Here</string>
+    <string name="get_directions">Get Directions</string>
 </resources>

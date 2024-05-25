@@ -141,8 +141,8 @@ class AddPharmacyActivity : AppCompatActivity() {
 
 
     private fun registerPharmacy() {
-        var name = pharmacyName.text.toString()
-        var locationName = pharmacyLocationName.text.toString()
+        val name = pharmacyName.text.toString()
+        val locationName = pharmacyLocationName.text.toString()
         if(name.takeIf { it.isNotBlank() }!=null
             && locationName.takeIf { it.isNotBlank() }!=null
             && pharmacyPhotoName.text.toString().takeIf { it.isNotBlank() }!=null

@@ -52,6 +52,7 @@
         <activity android:name=".AddStockActivity" />
         <activity android:name=".BuyMedicineActivity" />
         <activity android:name=".PharmacyInformationPanelActivity" />
+        <activity android:name=".DirectionsActivity" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"

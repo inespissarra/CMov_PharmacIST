@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -29,11 +30,14 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val TAG = "PharmacyInformationPanelActivity"
     }
 
+    private lateinit var pharmacy: PharmacyMetaData
+
     private var db: FirebaseFirestore = Firebase.firestore
     private var pharmacyLocation: String? = null
     private var pharmacyImageUrl: String? = null
     private var pharmacyName: String? = null
     private var pharmacyAddress: String? = null
+    private var pharmacyLatLng: LatLng? = null
     private var isFavorite: Boolean = false
     private var medicineStock: ArrayList<MedicineMetaData> = ArrayList()
     private lateinit var auth: FirebaseAuth
@@ -149,19 +153,18 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
 
     private fun getDataFromIntent() {
         Log.d(TAG, "here")
-        val pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")
-        if (pharmacy != null) {
-            val name : TextView = findViewById(R.id.pharmacyName)
-            val address : TextView = findViewById(R.id.pharmacyLocation)
-            val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
+        pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
+        val name : TextView = findViewById(R.id.pharmacyName)
+        val address : TextView = findViewById(R.id.pharmacyLocation)
+        val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
 
-            name.text = pharmacy.name
-            pharmacyName = pharmacy.name
-            address.text = pharmacy.locationName
-            pharmacyAddress = pharmacy.locationName
-            Log.d(TAG, pharmacyName.toString())
-            Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
-        }
+        name.text = pharmacy.name
+        pharmacyName = pharmacy.name
+        address.text = pharmacy.locationName
+        pharmacyAddress = pharmacy.locationName
+        pharmacyLatLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
+        Log.d(TAG, pharmacyName.toString())
+        Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
     }
 
     private fun createPharmacyName() {
@@ -234,9 +237,11 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val goToPharmacy: ImageView = findViewById(R.id.gotoPharmacy)
         goToPharmacy.setOnClickListener {
             // TODO: Might require changes
-            val intent = Intent(this, MapsActivity::class.java)
+            val intent = Intent(this, DirectionsActivity::class.java)
             intent.putExtra("pharmacyName", pharmacyName)
             intent.putExtra("pharmacyAddress", pharmacyAddress)
+            intent.putExtra("pharmacyLatitude", pharmacyLatLng!!.latitude)
+            intent.putExtra("pharmacyLongitude", pharmacyLatLng!!.longitude)
             this.startActivity(intent)
         }
     }

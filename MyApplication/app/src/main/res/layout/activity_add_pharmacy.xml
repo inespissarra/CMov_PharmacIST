@@ -57,12 +57,6 @@
                 android:onClick="onClick"
                 tools:ignore="RtlCompat" />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:src="@drawable/map2"
-                android:adjustViewBounds="true" />
 
             <LinearLayout
                 android:layout_width="350dp"
