@@ -120,8 +120,8 @@ class DirectionsActivity : AppCompatActivity(), OnMapReadyCallback{
         mMap = googleMap
         mMap.mapType = GoogleMap.MAP_TYPE_TERRAIN
 
-        pharmacyName = intent.getStringExtra("pharmacyName")
-        pharmacyAddress = intent.getStringExtra("pharmacyAddress")
+        pharmacyName = intent.getStringExtra("pharmacy")
+        pharmacyAddress = intent.getStringExtra("address")
         val latitude = intent.getDoubleExtra("pharmacyLatitude", 0.0)
         val longitude = intent.getDoubleExtra("pharmacyLongitude", 0.0)
         pharmacyLocation = LatLng(latitude, longitude)
