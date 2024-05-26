@@ -6,6 +6,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -15,14 +16,17 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.android.gms.maps.model.LatLng
 
 class PharmacyInformationPanelActivity: AppCompatActivity() {
 
@@ -30,18 +34,19 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val TAG = "PharmacyInformationPanelActivity"
     }
 
-    private lateinit var pharmacy: PharmacyMetaData
-
-    private var db: FirebaseFirestore = Firebase.firestore
+    private var db: FirebaseFirestore = Firebase.firestore // TODO: tirar os outros = Firebase.firestore
     private var pharmacyLocation: String? = null
     private var pharmacyImageUrl: String? = null
     private var pharmacyName: String? = null
     private var pharmacyAddress: String? = null
+    private lateinit var pharmacy: PharmacyMetaData
     private var pharmacyLatLng: LatLng? = null
     private var isFavorite: Boolean = false
-    private var medicineStock: ArrayList<MedicineMetaData> = ArrayList()
+    private lateinit var medicineStock: MutableMap<MedicineMetaData, Int>
     private lateinit var auth: FirebaseAuth
     private var isInUsersFavorite = false
+    private lateinit var adapter: ListMedicineAdapter
+    private lateinit var stockListView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,9 +70,11 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         createStockList()
         createManageStock()
 
+        createBottomNavigation()
+
         auth = Firebase.auth
         if (auth.currentUser != null) {
-            Log.d(TAG, "current user not null")
+            Log.d(TAG, "curretn user not null")
             checkIsFavorite()
         }
 
@@ -238,8 +245,8 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         goToPharmacy.setOnClickListener {
             // TODO: Might require changes
             val intent = Intent(this, DirectionsActivity::class.java)
-            intent.putExtra("pharmacyName", pharmacyName)
-            intent.putExtra("pharmacyAddress", pharmacyAddress)
+            intent.putExtra("pharmacy", pharmacyName)
+            intent.putExtra("address", pharmacyAddress)
             intent.putExtra("pharmacyLatitude", pharmacyLatLng!!.latitude)
             intent.putExtra("pharmacyLongitude", pharmacyLatLng!!.longitude)
             this.startActivity(intent)
@@ -247,8 +254,42 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     }
 
     private fun createStockList() {
-        val stockList: RecyclerView = findViewById(R.id.stockList)
-        stockList.adapter = ListMedicineAdapter(this, medicineStock)
+        stockListView = findViewById(R.id.stockList)
+        stockListView.layoutManager = GridLayoutManager(this@PharmacyInformationPanelActivity, 1)
+        medicineStock = mutableMapOf()
+        adapter = ListMedicineAdapter(this, medicineStock)
+        adapter.onItemClick = {
+            val intent = Intent(this, MedicineInformationPanelActivity::class.java)
+            intent.putExtra("medicine", it)
+            startActivity(intent)
+        }
+
+        eventChangeListener()
+    }
+
+    private fun eventChangeListener() {
+        db = Firebase.firestore
+        db.collection("stock")
+            .whereEqualTo("pharmacy", pharmacyName)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents.documents) {
+                    val medicineName = document.getString("medicine")
+                    val medicineImage = document.getString("image")
+                    val medicineDescription = document.getString("description")
+                    val amount = document.getLong("amount")!!.toInt()
+                    if (amount != 0) {
+                        val medicine = MedicineMetaData(name = medicineName, image = medicineImage,
+                            description = medicineDescription)
+                        medicineStock[medicine] = amount
+                    }
+                }
+                adapter.setMedicineStockList(medicineStock)
+                stockListView.adapter = adapter
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun createManageStock() {
@@ -284,5 +325,30 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             }
         }
         return 0
+    }
+
+    private fun createBottomNavigation() {
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView.selectedItemId = R.id.invisible
+        bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
+            when (item.itemId) {
+                R.id.nav_map -> {
+                    //startActivity(Intent(applicationContext, MapsActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_medicine -> {
+                    startActivity(Intent(applicationContext, MedicineActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_profile -> {
+                    startActivity(Intent(applicationContext, ProfileActivity::class.java))
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 }

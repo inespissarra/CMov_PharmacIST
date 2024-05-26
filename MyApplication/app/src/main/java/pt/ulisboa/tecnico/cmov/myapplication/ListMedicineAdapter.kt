@@ -6,25 +6,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class ListMedicineAdapter(private val context: Context, private var dataList: List<MedicineMetaData>)
+class ListMedicineAdapter(private val context: Context, private var dataList: Map<MedicineMetaData, Int>)
     : RecyclerView.Adapter<ListMedicineAdapter.MedicineViewHolder>() {
     var onItemClick : ((MedicineMetaData) -> Unit)? = null
+    private var medicineStockList: List<Map.Entry<MedicineMetaData, Int>> = dataList.entries.toList()
 
-    class MedicineViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    inner class MedicineViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val recImage: ImageView
         val recName: TextView
         val stockNumber: TextView
-        val buyButton: Button
+        val buyButton: ImageButton
 
         init {
             recImage = itemView.findViewById(R.id.recMedicineImage)
             recName = itemView.findViewById(R.id.recMedicineName)
-            stockNumber = itemView.findViewById(R.id.stockNumber)
+            stockNumber = itemView.findViewById(R.id.stockAmount)
             buyButton = itemView.findViewById(R.id.buyButton)
         }
     }
@@ -34,14 +36,17 @@ class ListMedicineAdapter(private val context: Context, private var dataList: Li
     }
 
     override fun getItemCount(): Int {
-        return dataList.size
+        return medicineStockList.size
     }
 
     override fun onBindViewHolder(holder: MedicineViewHolder, position: Int) {
-        val medicine = dataList[position]
+        val medicine = medicineStockList[position].key
+        val amount = medicineStockList[position].value
+
         Glide.with(context).load(medicine.image).into(holder.recImage)
+
         holder.recName.text = medicine.name
-        holder.stockNumber.text = medicine.stock.toString()
+        holder.stockNumber.text = amount.toString()
 
         holder.buyButton.setOnClickListener {
             // TODO: Send intent to buy medicine
@@ -54,5 +59,9 @@ class ListMedicineAdapter(private val context: Context, private var dataList: Li
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(medicine)
         }
+    }
+
+    fun setMedicineStockList(dataList: Map<MedicineMetaData, Int>) {
+        this.medicineStockList = dataList.entries.toList()
     }
 }
