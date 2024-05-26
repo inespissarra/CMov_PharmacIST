@@ -1,14 +1,15 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.SearchView
 import android.widget.Toast
@@ -25,7 +26,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
@@ -34,10 +34,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.gson.Gson
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.IOException
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
@@ -50,8 +46,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     private lateinit var mapSearchView: SearchView
     private lateinit var currentLocation: Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var pharmaciesList: ArrayList<PharmacyMetaData>
     private val markers = mutableListOf<Marker>()
+
+    lateinit var pharmacyRepository: PharmacyRepository
 
     companion object{
         private const val LOCATION_REQUEST_CODE = 1
@@ -61,8 +58,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         super.onCreate(savedInstanceState)
 
         Log.d(TAG, "Starting onCreate")
-
-        pharmaciesList = ArrayList()
 
         setContentView(R.layout.activity_maps)
 
@@ -78,6 +73,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         //createSearchBar()
         createSearchBar2()
         createBottomNavigation()
+
+        pharmacyRepository = PharmacyRepository(this)
 
         Log.d(TAG, "Finished onCreate")
     }
@@ -200,18 +197,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         mMap.setOnMarkerClickListener { marker ->
             val pharmacyName = marker.title
-            val pharmacy = pharmaciesList.find { it.name == pharmacyName }
-            if (pharmacy!=null) {
-                val intent =
-                    Intent(applicationContext, PharmacyInformationPanelActivity::class.java)
-                intent.putExtra("pharmacy", pharmacy)
-                startActivity(intent)
+            if (pharmacyName!=null){
+                val pharmacy = pharmacyRepository.getPharmacy(pharmacyName)
+                if (pharmacy != null) {
+                    val intent =
+                        Intent(applicationContext, PharmacyInformationPanelActivity::class.java)
+                    intent.putExtra("pharmacy", pharmacy)
+                    startActivity(intent)
+                }
             }
             false
         }
     }
 
-    private fun markPlaces(){
+    private fun markPlaces(pharmaciesList: ArrayList<PharmacyMetaData>){
+        removeAllMarkers()
         for(pharmacy in pharmaciesList){
             val latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
             addMarker(pharmacy.name!!, latLng)
@@ -222,15 +222,92 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     }
 
     private fun getPharmacies() {
-        removeAllMarkers()
-        pharmaciesList = ArrayList()
         val center = mMap.cameraPosition.target
+        var pharmacies = pharmacyRepository.getNearbyPharmacies(center.latitude, center.longitude, 0.1)
+        if (pharmacies.isEmpty()) {
+            findNearbyPharmaciesFirebase(center.latitude, center.longitude, object : NearbyPharmaciesFirebaseCallback {
+                override fun onSuccess() {
+                    pharmacies = pharmacyRepository.getNearbyPharmacies(center.latitude, center.longitude, 0.1)
+                    markPlaces(pharmacies)
+                }
+                override fun onFailure() {
+                    showToast("There are no pharmacies in this area")
+                }
+            })
+        } else{
+            markPlaces(pharmacies)
+        }
+    }
+
+    private fun getPharmacy(name: String) {
+        val pharmacy : PharmacyMetaData? = pharmacyRepository.getPharmacy(name)
+        if (pharmacy == null) {
+            findPharmacyFirebase(name, object :PharmacyFirebaseCallback{
+                override fun onSuccess(pharmacy: PharmacyMetaData) {
+                    removeAllMarkers()
+                    val location = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
+                    addMarker(pharmacy.name!!, location)
+                    zoomOnMap(location)
+                }
+
+                override fun onFailure() {
+                    showToast("Pharmacy not found")
+                }
+            })
+        } else {
+            removeAllMarkers()
+            val location = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
+            addMarker(pharmacy.name!!, location)
+            zoomOnMap(location)
+        }
+    }
+
+    private fun updatePharmaciesCache(pharmaciesList : ArrayList<PharmacyMetaData>){
+        pharmacyRepository.clearPharmacies()
+        for (pharmacy in pharmaciesList){
+            pharmacyRepository.insertOrUpdate(pharmacy)
+        }
+    }
+
+    private fun findPharmacyFirebase(name: String, callback: PharmacyFirebaseCallback){
+        db = Firebase.firestore
+        val collectionRef = db.collection("pharmacies")
+        var pharmacy : PharmacyMetaData? = null
+        collectionRef.whereEqualTo("name", name).get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    pharmacy = documents.documents.first().toObject(PharmacyMetaData::class.java)
+                    if(pharmacy!=null) {
+                        callback.onSuccess(pharmacy!!)
+                    } else {
+                        callback.onFailure()
+                    }
+                } else callback.onFailure()
+            }
+            .addOnFailureListener { exception ->
+                showToast(exception.toString())
+            }
+        if (pharmacy!=null){
+            findNearbyPharmaciesFirebase(pharmacy!!.latitude!!, pharmacy!!.longitude!!, object : NearbyPharmaciesFirebaseCallback {
+                override fun onSuccess() {}
+                override fun onFailure() {}
+            })
+        }
+    }
+
+    interface PharmacyFirebaseCallback {
+        fun onSuccess(pharmacy : PharmacyMetaData)
+        fun onFailure()
+    }
+
+    private fun findNearbyPharmaciesFirebase(latitude: Double, longitude: Double, callback: NearbyPharmaciesFirebaseCallback){
+        val pharmaciesList = ArrayList<PharmacyMetaData>()
         db = Firebase.firestore
         val collectionRef =  db.collection("pharmacies")
-        val query =  collectionRef.whereGreaterThan("latitude", center.latitude - 0.1)
-            .whereLessThan("latitude", center.latitude + 0.1)
-            .whereGreaterThan("longitude", center.longitude - 0.1)
-            .whereLessThan("longitude", center.longitude + 0.1)
+        val query =  collectionRef.whereGreaterThan("latitude", latitude - 0.3)
+            .whereLessThan("latitude", latitude + 0.3)
+            .whereGreaterThan("longitude", longitude - 0.3)
+            .whereLessThan("longitude", longitude + 0.3)
         query.get()
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {
@@ -240,34 +317,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                             pharmaciesList.add(pharmacy)
                         }
                     }
-                    markPlaces()
+                    updatePharmaciesCache(pharmaciesList)
+                    callback.onSuccess()
+                } else {
+                    callback.onFailure()
                 }
             }
             .addOnFailureListener { exception ->
-                showToast(exception.toString())
+                callback.onFailure()
+                Log.d(TAG, exception.toString())
             }
     }
 
-    private fun getPharmacy(name: String) {
-        removeAllMarkers()
-        pharmaciesList = ArrayList()
-        db = Firebase.firestore
-        val collectionRef =  db.collection("pharmacies")
-        collectionRef.whereEqualTo("name", name).get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    val pharmacy: PharmacyMetaData? = documents.documents.first().toObject(PharmacyMetaData::class.java)
-                    if (pharmacy != null) {
-                        pharmaciesList.add(pharmacy)
-                        val location = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
-                        addMarker(pharmacy.name!!, location)
-                        zoomOnMap(location)
-                    }
-                } else showToast("Pharmacy not found")
-            }
-            .addOnFailureListener { exception ->
-                showToast(exception.toString())
-            }
+    interface NearbyPharmaciesFirebaseCallback {
+        fun onSuccess()
+        fun onFailure()
     }
 
     private fun addMarker(name:String, latLng: LatLng){

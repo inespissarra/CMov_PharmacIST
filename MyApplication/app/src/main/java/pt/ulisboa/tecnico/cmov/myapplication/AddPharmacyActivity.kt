@@ -134,11 +134,6 @@ class AddPharmacyActivity : AppCompatActivity() {
         }
     }
 
-    interface UploadCallback {
-        fun onSuccess(downloadUrl: String)
-        fun onFailure(exception: Exception)
-    }
-
 
     private fun registerPharmacy() {
         val name = pharmacyName.text.toString()
@@ -195,6 +190,11 @@ class AddPharmacyActivity : AppCompatActivity() {
             // Handle failed upload
             callback.onFailure(exception)
         }
+    }
+
+    interface UploadCallback {
+        fun onSuccess(downloadUrl: String)
+        fun onFailure(exception: Exception)
     }
 
     private fun createBottomNavigation() {
