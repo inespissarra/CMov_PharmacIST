@@ -73,8 +73,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="32dp"
                         android:layout_marginTop="8dp"
-                        android:text="TextView"
-                        android:textSize="20sp"
+                        android:text="Address"
+                        android:textSize="18sp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/ratingBar" />
 
@@ -124,6 +124,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/available_stock"
                 android:textSize="20sp"
+                android:textStyle="italic"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/pharmacyLocation" />
 
@@ -174,20 +175,22 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
              -->
-            <com.google.android.material.bottomnavigation.BottomNavigationView
-                android:id="@+id/bottomNavigationView"
-                android:layout_width="0dp"
-                android:layout_height="64dp"
-                android:background="@drawable/bottom_nav_background"
-                app:itemIconSize="30dp"
-                app:itemIconTint="@drawable/bottom_nav_selector"
-                app:itemTextColor="@color/green_4"
-                app:labelVisibilityMode="selected"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:menu="@menu/bottom_nav_bar" />
+
         </LinearLayout>
     </ScrollView>
+
+    <!--<com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:background="@drawable/bottom_nav_background"
+        app:itemIconSize="30dp"
+        app:itemIconTint="@drawable/bottom_nav_selector"
+        app:itemTextColor="@color/green_4"
+        app:labelVisibilityMode="selected"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_bar" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

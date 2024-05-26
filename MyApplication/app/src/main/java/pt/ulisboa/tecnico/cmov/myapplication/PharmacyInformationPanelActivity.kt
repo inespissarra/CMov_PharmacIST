@@ -70,7 +70,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         createStockList()
         createManageStock()
 
-        createBottomNavigation()
+        // createBottomNavigation()
 
         auth = Firebase.auth
         if (auth.currentUser != null) {
@@ -296,8 +296,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val manageStock: Button = findViewById(R.id.manageStock)
         manageStock.setOnClickListener {
             val intent = Intent(this, ScanBarcodeActivity::class.java)
-            intent.putExtra("name", pharmacyName)
-            intent.putExtra("address", pharmacyAddress)
+            intent.putExtra("pharmacyName", pharmacyName)
             this.startActivity(intent)
         }
     }
@@ -327,7 +326,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         return 0
     }
 
-    private fun createBottomNavigation() {
+    /*private fun createBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNavigationView.selectedItemId = R.id.invisible
         bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
@@ -350,5 +349,5 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 else -> false
             }
         }
-    }
+    }*/
 }

@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -10,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -18,7 +20,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -37,6 +44,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
     private lateinit var resultText: TextView
     private lateinit var addRegisterButton: Button
     private var pharmacyName: String? = null
+    private var db: FirebaseFirestore = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,10 +63,10 @@ class ScanBarcodeActivity : AppCompatActivity() {
             else requestStoragePermissions()
         }
 
+        pharmacyName = intent.getStringExtra("pharmacyName")
+
         resultText = findViewById(R.id.resultIv)
         addRegisterButton = findViewById(R.id.addRegisterButton)
-
-        pharmacyName = intent.getStringExtra("pharmacyName") ?: "ErrorName"
 
         Log.d(TAG, "onCreate finished")
     }
@@ -87,27 +95,34 @@ class ScanBarcodeActivity : AppCompatActivity() {
     }
 
     private fun processBarcode(barcode: String) {
-        // TODO: Send barcode to db and verify existance of medicine
-        if (true) {
-            resultText.text = "Barcode: $barcode\nBarcode matches existant stock"
-            addRegisterButton.text = "Add stock to medicine"
-            addRegisterButton.setOnClickListener {
-                val intent = Intent(this, AddStockActivity::class.java)
-                intent.putExtra("pharmacyName", pharmacyName)
-                intent.putExtra("medicineName", "Hey") // Add name of medicine
-                this.startActivity(intent)
+        var medicine: MedicineMetaData
+        db.collection("medicines")
+            .whereEqualTo("barcode", barcode)
+            .get()
+            .addOnSuccessListener {documents ->
+                if (!documents.isEmpty) {
+                    // if there is a medicine with such barcode
+                    medicine = documents.documents[0].toObject(MedicineMetaData::class.java)!!
+                    resultText.text = "Barcode: $barcode\nBarcode matches existent stock"
+                    addRegisterButton.text = "Add stock to medicine"
+                    addRegisterButton.setOnClickListener {
+                        addAmountDialog(medicine.name!!)
+                    }
+                }
+                else {
+                    resultText.text = "Barcode: $barcode\nBarcode doesn't match existent stock"
+                    addRegisterButton.text = "Register new medicine"
+                    addRegisterButton.setOnClickListener {
+                        val intent = Intent(this, AddMedicineActivity::class.java)
+                        intent.putExtra("pharmacyName", pharmacyName)
+                        intent.putExtra("barcode", barcode)
+                        this.startActivity(intent)
+                    }
+                }
             }
-        } else {
-            resultText.text = "Barcode: $barcode\nBarcode doesn't match existant stock"
-            addRegisterButton.text = "Register new medicine"
-            addRegisterButton.setOnClickListener {
-                val intent = Intent(this, AddMedicineActivity::class.java)
-                intent.putExtra("pharmacyName", pharmacyName)
-                intent.putExtra("medicineName", "Hey") // Add name of medicine
-                intent.putExtra("barcode", barcode)
-                this.startActivity(intent)
+            .addOnFailureListener {
+                Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
             }
-        }
     }
 
     private fun getBitmapFromURI(uri: Uri): Bitmap? {
@@ -212,6 +227,40 @@ class ScanBarcodeActivity : AppCompatActivity() {
                 else showToast("Storage permissions are required")
             }
         }
+    }
+
+    private fun addAmountDialog(medicine: String) {
+        var amount : Int? = null
+        val inflater = layoutInflater
+        val dialogLayout = inflater.inflate(R.layout.amount_dialog_box_layout, null)
+        val editText = dialogLayout.findViewById<EditText>(R.id.amount_editText)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("For medicine " + medicine)
+            .setView(dialogLayout)
+            .setPositiveButton("OK") { dialog, which ->
+                amount = editText.text.toString().toInt()
+                addAmountToMedicine(medicine, amount!!)
+            }
+            . setNegativeButton("Cancel") { dialog, which ->
+                Log.d(TAG, "Cancel button clicked")
+                dialog.dismiss()
+            }
+            .create()
+
+        dialog.show()
+    }
+
+    private fun addAmountToMedicine(medicineName: String, amount: Int) {
+        Log.d(TAG, "pharmacy name: " + pharmacyName + "\nmedicine name: " + medicineName)
+        db.collection("stock").document(pharmacyName + "_" + medicineName)
+            .update("amount", FieldValue.increment(amount.toLong()))
+            .addOnSuccessListener {
+                Log.d(TAG, "stock added successfully")
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "stock addition failed")
+            }
     }
 
     private fun showToast(message: String){

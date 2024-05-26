@@ -21,21 +21,27 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class AddMedicineActivity : AppCompatActivity() {
 
     companion object {
-        val TAG = "AddMedicineActivity"
+        const val TAG = "AddMedicineActivity"
 
         private const val CAMERA_REQUEST_CODE = 100
         private const val STORAGE_REQUEST_CODE = 101
     }
 
     private lateinit var imageIv: ImageView
+    private lateinit var nameText: EditText
     private lateinit var amountText: EditText
     private lateinit var purposeText: EditText
     private var barcode: String? = null
+    private var pharmacy: String? = null
     private var imageUri: Uri? = null
+    private lateinit var db: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,9 +68,12 @@ class AddMedicineActivity : AppCompatActivity() {
             if (checkStoragePermissions() || requestStoragePermissions()) pickImageGallery()
         }
 
+        nameText = findViewById(R.id.nameField)
         amountText = findViewById(R.id.amountField)
         purposeText = findViewById(R.id.purposeField)
         barcode = intent.getStringExtra("barcode")
+        pharmacy = intent.getStringExtra("pharmacyName")
+        db = Firebase.firestore
 
         val registerButton: Button = findViewById(R.id.registerBtn)
         registerButton.setOnClickListener{
@@ -73,19 +82,57 @@ class AddMedicineActivity : AppCompatActivity() {
     }
 
     private fun registerMedicine() {
-        if (amountText.text.toString().takeIf { it.isNotBlank() } != null &&
+        if (nameText.text.toString().takeIf { it.isNotBlank() } != null &&
+            amountText.text.toString().takeIf { it.isNotBlank() } != null &&
             purposeText.text.toString().takeIf { it.isNotBlank() } != null) {
-            // TODO: Register medicine to db
-            // TODO: Verify output
-            if (true) {
+            val medicineName = nameText.text.toString()
+            val purpose = purposeText.text.toString()
+            val amount = amountText.text.toString().toInt()
+            addNewMedicine(medicineName, purpose)
+            addNewMedicineToStock(medicineName, purpose, amount)
+        }
+        else
+            showToast("Must fill all mandatory fields")
+    }
+
+    private fun addNewMedicine(medicineName: String, purpose: String) {
+        val medicine = hashMapOf(
+            "name" to medicineName,
+            "description" to purpose,
+            "image" to imageUri
+        )
+        db.collection("medicines").document(medicineName)
+            .set(medicine)
+            .addOnSuccessListener {
                 Log.d(TAG, "Medicine registered successfully")
                 showToast("Medicine registered successfully")
                 finish()
-            } else {
+            }
+            .addOnFailureListener {
                 Log.e(TAG, "Error registering medicine")
                 showToast("Error registering medicine")
             }
-        }
+    }
+
+    private fun addNewMedicineToStock(medicineName: String, purpose: String, amount: Int) {
+        val stock = hashMapOf(
+            "medicine" to medicineName,
+            "description" to purpose,
+            "image" to imageUri,
+            "pharmacy" to pharmacy,
+            "amount" to amount
+        )
+        db.collection("stock").document(pharmacy + "_" + medicineName)
+            .set(stock)
+            .addOnSuccessListener {
+                Log.d(TAG, "Medicine registered successfully")
+                showToast("Medicine registered successfully")
+                finish()
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Error registering medicine")
+                showToast("Error registering medicine")
+            }
     }
 
     private fun pickImageGallery() {
