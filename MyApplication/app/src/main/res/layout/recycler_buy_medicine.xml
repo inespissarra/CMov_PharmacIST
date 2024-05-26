@@ -22,7 +22,7 @@
             android:layout_height="60dp"
             android:layout_marginStart="24dp"
             android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
+            android:layout_centerVertical="true"
             android:scaleType="centerCrop"
             android:src="@drawable/image"
             app:shapeAppearanceOverlay="@style/roundedImageViewRounded" />
@@ -33,15 +33,15 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="10dp"
-            android:layout_toStartOf="@+id/buy"
+            android:layout_toStartOf="@+id/buyButton"
             android:layout_toEndOf="@id/recMedicineImage"
             android:gravity="center_vertical"
             android:text="Name"
             android:textColor="@color/green_4"
-            android:textSize="24sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/stockString"
@@ -49,13 +49,24 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/recMedicineName"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="-12dp"
+            android:layout_marginTop="-4dp"
             android:layout_toEndOf="@+id/recMedicineImage"
             android:textColor="@color/green_4"
             android:textSize="12sp"
             android:text="Stock: " />
 
-        <Button
+        <TextView
+            android:id="@+id/stockAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/recMedicineName"
+            android:layout_marginTop="-4dp"
+            android:layout_toEndOf="@id/stockString"
+            android:text="0"
+            android:textColor="@color/green_4"
+            android:textSize="12sp" />
+
+        <!--<Button
             android:id="@+id/buyButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -65,19 +76,17 @@
             android:layout_marginEnd="24dp"
             android:backgroundTint="@color/green_3"
             android:textColor="@color/beige_2"
-            android:text="@string/buy" />
+            android:text="@string/buy" />-->
 
-        <TextView
-            android:id="@+id/stockNumber"
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/recMedicineName"
-            android:layout_marginStart="-2dp"
-            android:layout_marginTop="-12dp"
-            android:layout_toEndOf="@+id/stockString"
-            android:text="0"
-            android:textColor="@color/green_4"
-            android:textSize="12sp" />
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="32dp"
+            android:layout_centerVertical="true"
+            android:id="@+id/buyButton"
+            android:src="@drawable/baseline_add_shopping_cart_24"
+            android:background="@color/zxing_transparent"/>
 
     </RelativeLayout>
 
