@@ -14,11 +14,14 @@
         <!-- Customize your theme here. -->
         <item name="android:windowActivityTransitions">true</item>
         <item name="navigationBackgroundColor">@color/beige_2</item>
-        <item name="bottomIconColor">@color/green_4</item>
+        <item name="bottomIconColor">@color/green_3</item>
+        <item name="bottomIconColor2">@color/green_2</item>
         <item name="applicationNameColor">@color/brown_2</item>
-        <item name="hintColor">@color/green_1</item>
+        <item name="hintColor">@color/green_2</item>
         <item name="buttonColor">@color/green_3</item>
         <item name="buttonTextColor">@color/beige_1</item>
+        <item name="button2Color">@color/beige_2</item>
+        <item name="button2TextColor">@color/brown_3</item>
         <item name="iconBackgroundColor">@color/beige_2</item>
         <item name="iconColor">@color/green_3</item>
         <item name="textBoxBackgroundColor">@color/beige_2</item>
@@ -27,6 +30,7 @@
         <item name="itemBackgroundColor">@color/beige_3</item>
         <item name="itemTextColor">@color/green_4</item>
         <item name="titleTextColor">@color/brown_2</item>
+        <item name="subtitleTextColor">@color/brown_1</item>
 
     </style>
 

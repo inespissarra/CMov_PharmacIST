@@ -29,7 +29,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:layout_weight="1"
-                    android:text="Scan Now!"
+                    android:background="@drawable/bottom_beige_background"
+                    android:text="@string/scan_now"
+                    android:textColor="?attr/button2TextColor"
                     android:layout_marginTop="34dp"
                     android:layout_marginStart="10dp"
                     tools:ignore="MissingConstraints" />
@@ -39,7 +41,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:layout_weight="1"
-                    android:text="Gallery"
+                    android:background="@drawable/bottom_beige_background"
+                    android:text="@string/gallery"
+                    android:textColor="?attr/button2TextColor"
                     android:layout_marginTop="34dp"
                     android:layout_marginStart="5dp"
                     tools:ignore="MissingConstraints" />
@@ -78,9 +82,10 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="34dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/green_3"
+                android:background="@drawable/button_green_background"
+                app:backgroundTint="@null"
                 android:text="Add/Register"
-                android:textColor="@color/beige_1" />
+                android:textColor="?attr/buttonTextColor" />
 
         </LinearLayout>
     </ScrollView>

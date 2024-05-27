@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/navigationBackgroundColor"
     tools:context=".ProfileActivity">
 
     <TextView
@@ -24,7 +25,7 @@
         android:background="@drawable/bottom_nav_background"
         app:itemIconSize="30dp"
         app:itemIconTint="@drawable/bottom_nav_selector"
-        app:itemTextColor="@color/green_4"
+        app:itemTextColor="?attr/bottomIconColor"
         app:labelVisibilityMode="selected"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

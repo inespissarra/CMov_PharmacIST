@@ -88,7 +88,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         auth = Firebase.auth
         if (auth.currentUser != null) {
-            Log.d(TAG, "ENTROU **")
             getFavoritePharmacies()
         }
         //val center = mMap.cameraPosition.target
@@ -96,6 +95,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         //    override fun onSuccess() {}
         //    override fun onFailure() {}
         //})
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        favoritePharmaciesRepository.clearPharmacies()
     }
 
     private fun createMapFragment() {
@@ -227,11 +231,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         removeAllMarkers()
         for(pharmacy in pharmaciesList){
             val latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
-            if (favoritePharmaciesRepository.isFavoritePharmacy(pharmacy.name!!)) {
-                addStarMarker(pharmacy.name!!, latLng)
-            } else {
-                addMarker(pharmacy.name!!, latLng)
-            }
+            addMarker(pharmacy.name!!, latLng)
         }
         //for(latLng in staredPlaces){
         //    addStarMarker(latLng)
@@ -252,11 +252,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
             .get()
             .addOnSuccessListener { documents ->
-                Log.d(TAG, "AQUI 1 **")
                 if (!documents.isEmpty){
-                    Log.d(TAG, "AQUI 2 **")
                     for (data in documents.documents) {
-                        Log.d(TAG, "AQUI 3 **")
                         val pharmacy: String? = data.getString("name")
                         if (pharmacy != null) {
                             favoritePharmaciesRepository.insertOrUpdate(pharmacy)
@@ -378,18 +375,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     }
 
     private fun addMarker(name:String, latLng: LatLng){
-        val marker = mMap.addMarker(MarkerOptions()
-            .position(latLng)
-            .title(name)
-            .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)))
-        marker?.let { markers.add(it) }
-    }
-
-    private fun addStarMarker(name:String, latLng: LatLng){
-        val marker = mMap.addMarker(MarkerOptions()
-            .position(latLng)
-            .title(name)
-            .icon(BitmapDescriptorFactory.fromResource(R.drawable.star_marker)))
+        val marker : Marker?
+        if (favoritePharmaciesRepository.isFavoritePharmacy(name)){
+            marker = mMap.addMarker(MarkerOptions()
+                .position(latLng)
+                .title(name)
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.star_marker)))
+        } else {
+            marker = mMap.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(name)
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
+            )
+        }
         marker?.let { markers.add(it) }
     }
 

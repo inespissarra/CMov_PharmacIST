@@ -11,10 +11,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class ListMedicineAdapter(private val context: Context, private var dataList: Map<MedicineMetaData, Int>)
+class ListMedicineAdapter(private val context: Context, private var dataList: Map<MedicineMetaData, Int>, private var pharmacyName : String)
     : RecyclerView.Adapter<ListMedicineAdapter.MedicineViewHolder>() {
     var onItemClick : ((MedicineMetaData) -> Unit)? = null
     private var medicineStockList: List<Map.Entry<MedicineMetaData, Int>> = dataList.entries.toList()
+    private var pharmacy : String = pharmacyName
 
     inner class MedicineViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val recImage: ImageView
@@ -48,10 +49,10 @@ class ListMedicineAdapter(private val context: Context, private var dataList: Ma
         holder.stockNumber.text = amount.toString()
 
         holder.buyButton.setOnClickListener {
-            // TODO: Send intent to buy medicine
             val intent: Intent = Intent(context, BuyMedicineActivity::class.java)
-            intent.putExtra("medicine", medicine.name)
-            intent.putExtra("pharmacy", medicine.pharmacy)
+            intent.putExtra("medicine", medicine)
+            intent.putExtra("stock", amount)
+            intent.putExtra("pharmacyName", pharmacy)
             context.startActivity(intent)
         }
 

@@ -30,9 +30,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val TAG = "PharmacyInformationPanelActivity"
     }
 
-    private var db: FirebaseFirestore = Firebase.firestore // TODO: tirar os outros = Firebase.firestore
-    private var pharmacyLocation: String? = null
-    private var pharmacyImageUrl: String? = null
+    private var db: FirebaseFirestore = Firebase.firestore
     private var pharmacyName: String? = null
     private var pharmacyAddress: String? = null
     private lateinit var pharmacy: PharmacyMetaData
@@ -53,7 +51,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         //createPharmacyName()
         getDataFromIntent()
 
-        queryDB()
 
         /*createPharmacyImage()
         createPharmacyAddress()*/
@@ -171,23 +168,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
     }
 
-    private fun queryDB() {
-        val connectivityFlag = checkConnectivity(this)
-        db.collection("pharmacies").get()
-            .addOnSuccessListener {
-                if (!it.isEmpty) {
-                    for (document in it.documents) {
-                        val name = document.get("name")
-                        // TODO: Get stock 😔
-                        if (name != null && name == pharmacyName) {
-                            pharmacyLocation = document.get("locationName") as String?
-                            pharmacyImageUrl = document.get("image") as String?
-                        }
-                    }
-                }
-            }
-    }
-
     private fun createRatingBar() {
         val ratingBar: RatingBar = findViewById(R.id.ratingBar)
         // TODO: Part 2 - Update with average of ratings
@@ -198,7 +178,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private fun createGoToPharmacy() {
         val goToPharmacy: ImageView = findViewById(R.id.gotoPharmacy)
         goToPharmacy.setOnClickListener {
-            // TODO: Might require changes
             val intent = Intent(this, DirectionsActivity::class.java)
             intent.putExtra("pharmacy", pharmacyName)
             intent.putExtra("address", pharmacyAddress)
@@ -212,7 +191,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         stockListView = findViewById(R.id.stockList)
         stockListView.layoutManager = GridLayoutManager(this@PharmacyInformationPanelActivity, 1)
         medicineStock = mutableMapOf()
-        adapter = ListMedicineAdapter(this, medicineStock)
+        adapter = ListMedicineAdapter(this, medicineStock, pharmacyName!!)
         adapter.onItemClick = {
             val intent = Intent(this, MedicineInformationPanelActivity::class.java)
             intent.putExtra("medicine", it)
@@ -223,7 +202,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     }
 
     private fun getStock() {
-        db = Firebase.firestore
         db.collection("stock")
             .whereEqualTo("pharmacy", pharmacyName)
             .get()

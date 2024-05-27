@@ -23,16 +23,17 @@
         android:id="@+id/directionsButton"
         android:layout_width="250dp"
         android:layout_height="70dp"
-        android:layout_marginBottom="76dp"
+        android:layout_marginBottom="72dp"
         android:adjustViewBounds="false"
-        android:backgroundTint="@color/beige_2"
+        android:background="@drawable/bottom_beige_background"
         android:contentDescription="@string/image"
         android:scaleType="fitXY"
         android:src="@drawable/current_location"
         android:text="@string/get_directions"
-        android:textColor="@color/brown_3"
+        android:textColor="?attr/button2TextColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageButton

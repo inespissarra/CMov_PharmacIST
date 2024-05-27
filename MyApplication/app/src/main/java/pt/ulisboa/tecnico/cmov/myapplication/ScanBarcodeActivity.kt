@@ -241,7 +241,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
         val editText = dialogLayout.findViewById<EditText>(R.id.amount_editText)
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle("For medicine " + medicine)
+            .setTitle("For medicine $medicine")
             .setView(dialogLayout)
             .setPositiveButton("OK") { dialog, which ->
                 amount = editText.text.toString().toInt()

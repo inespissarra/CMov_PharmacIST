@@ -40,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/edit_text_background"
-            android:hint="Email"
+            android:hint="@string/email"
             android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -63,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/edit_text_background"
-            android:hint="Password"
+            android:hint="@string/password"
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,7 +74,7 @@
         android:layout_marginTop="64dp"
         android:background="@drawable/button_green_background"
         android:padding="18dp"
-        android:text="Login"
+        android:text="@string/login"
         android:textColor="?attr/buttonTextColor"
         android:textSize="32sp"
         app:backgroundTint="@null"
@@ -89,7 +89,7 @@
         android:layout_marginTop="40dp"
         android:text="Not registered yet? Sign up >"
         android:textSize="16sp"
-        android:textColor="@color/brown_2"
+        android:textColor="?attr/titleTextColor"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -101,7 +101,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Login as guest >"
-        android:textColor="@color/brown_2"
+        android:textColor="?attr/titleTextColor"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

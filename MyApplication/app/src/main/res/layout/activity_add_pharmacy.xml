@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/beige_2">
+    android:background="?attr/navigationBackgroundColor">
 
     <ScrollView
         android:id="@+id/scrollView2"
@@ -26,7 +26,7 @@
                 android:layout_marginBottom="32dp"
                 android:text="@string/register_a_new_pharmacy"
                 android:textAlignment="center"
-                android:textColor="@color/brown_2"
+                android:textColor="?attr/titleTextColor"
                 android:textSize="48sp"
                 android:textStyle="normal" />
 
@@ -39,7 +39,7 @@
                 android:background="@drawable/edit_text_background"
                 android:paddingStart="10dp"
                 android:hint="@string/name_field"
-                android:textColorHint="@color/green_2" />
+                android:textColorHint="?attr/hintColor" />
 
             <TextView
                 android:id="@+id/addressField"
@@ -52,7 +52,7 @@
                 android:hint="@string/address_field"
                 android:paddingStart="10dp"
                 android:textAlignment="viewStart"
-                android:textColorHint="@color/green_2"
+                android:textColorHint="?attr/hintColor"
                 android:textSize="18sp"
                 android:onClick="onClick"
                 tools:ignore="RtlCompat" />
@@ -71,9 +71,10 @@
                     android:layout_height="50dp"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
+                    android:background="@drawable/edit_text_background"
                     android:paddingStart="10dp"
                     android:hint="@string/photo_field"
-                    android:textColorHint="@color/green_2"
+                    android:textColorHint="?attr/hintColor"
                     android:textSize="18sp"
                     android:onClick="onClick" />
 
@@ -112,9 +113,10 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="100dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/green_3"
+                android:background="@drawable/button_green_background"
+                app:backgroundTint="@null"
                 android:text="@string/register"
-                android:textColor="@color/beige_2" />
+                android:textColor="?attr/buttonTextColor" />
         </LinearLayout>
     </ScrollView>
 

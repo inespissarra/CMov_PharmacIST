@@ -30,4 +30,12 @@
     <string name="amount_field">Amount*</string>
     <string name="search_pharmacies_here">Search Pharmacies Here</string>
     <string name="get_directions">Get Directions</string>
+    <string name="cancel">CANCEL</string>
+    <string name="select">SELECT</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="scan_now">Scan Now!</string>
+    <string name="gallery">Gallery</string>
 </resources>

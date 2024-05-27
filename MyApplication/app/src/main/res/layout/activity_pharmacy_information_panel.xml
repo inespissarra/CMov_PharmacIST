@@ -23,7 +23,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="180dp"
                 android:contentDescription="@string/pharmacy_image"
-                android:scaleType="fitXY"
+                android:scaleType="centerCrop"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/frameLayout"
@@ -132,7 +132,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/stockList"
                 android:layout_width="350dp"
-                android:layout_height="220dp"
+                android:layout_height="169dp"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="12dp"
@@ -159,7 +159,8 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_gravity="center"
-                android:backgroundTint="@color/beige_2"
+                android:background="@drawable/bottom_beige_background"
+                android:backgroundTint="@null"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -180,18 +181,5 @@
         </LinearLayout>
     </ScrollView>
 
-    <!--<com.google.android.material.bottomnavigation.BottomNavigationView
-                android:id="@+id/bottomNavigationView"
-                android:layout_width="0dp"
-                android:layout_height="64dp"
-                android:background="@drawable/bottom_nav_background"
-                app:itemIconSize="30dp"
-                app:itemIconTint="@drawable/bottom_nav_selector"
-                app:itemTextColor="@color/green_4"
-                app:labelVisibilityMode="selected"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_bar" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

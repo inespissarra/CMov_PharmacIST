@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/pageBackgroundColor">
 
     <ScrollView
         android:id="@+id/scrollView2"
@@ -17,7 +18,7 @@
 
             <ImageView
                 android:id="@+id/medicineImage"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="180dp"
                 android:contentDescription="@string/pharmacy_image"
                 android:scaleType="centerCrop"
@@ -39,6 +40,7 @@
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="8dp"
                     android:text="TextView"
+                    android:textColor="?attr/titleTextColor"
                     android:textSize="32sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -58,6 +60,7 @@
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="8dp"
                     android:text="@string/available_stock"
+                    android:textColor="?attr/titleTextColor"
                     android:textSize="20sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/pharmacyLocation" />
@@ -87,7 +90,7 @@
                 android:inputType="number"
                 android:layout_marginBottom="20dp"
                 android:layout_weight="1"
-                android:textColorHint="@color/green_2"
+                android:textColorHint="?attr/hintColor"
                 />
 
             <Button

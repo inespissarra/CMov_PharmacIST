@@ -8,7 +8,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class BuyMedicineActivity : AppCompatActivity() {
 
@@ -16,50 +20,43 @@ class BuyMedicineActivity : AppCompatActivity() {
         val TAG = "BuyMedicineActivity"
     }
 
-    private var medicineName: String? = null
-    private var availableStock: Int = 0
+    private lateinit var medicine: MedicineMetaData
+    private var stock: Int = 0
+    private lateinit var pharmacyName: String
+    private var db: FirebaseFirestore = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate initiated")
         setContentView(R.layout.activity_buy_medicine)
 
-        createMedicineName()
-        createMedicineImage()
-        val intentStock = intent.getStringExtra("stock")
-        availableStock = intentStock?.toInt() ?: 0
-        createStockAmount(stock = intentStock!!)
-
-        createBuyButton()
+        createView()
 
         Log.d(TAG, "onCreate finished")
     }
 
-    private fun createMedicineName() {
+    private fun createView() {
+        medicine = intent.getParcelableExtra<MedicineMetaData>("medicine")!!
+        stock = intent.getIntExtra("stock", 0)
+        pharmacyName = intent.getStringExtra("pharmacyName")!!
+
+        // NAME
         val medicineNameTextView: TextView = findViewById(R.id.medicineName)
-        val intentMedicineName = intent.getCharSequenceExtra("medicineName")
-        if (intentMedicineName == null) medicineNameTextView.text = "ErrorName"
+        if (medicine.name == null) medicineNameTextView.text = "ErrorName"
         else {
-            medicineNameTextView.text = intentMedicineName
-            medicineName = intentMedicineName.toString()
+            medicineNameTextView.text = medicine.name
         }
-        if (intentMedicineName == "ErrorName") Log.e(PharmacyInformationPanelActivity.TAG, "Error loading medicine's name")
-    }
+        if (medicine.name == "ErrorName") Log.e(PharmacyInformationPanelActivity.TAG, "Error loading medicine's name")
 
-    private fun createMedicineImage() {
-        val medicineImage: ImageView = findViewById(R.id.pharmacyImage)
-        medicineImage.setImageDrawable(
-            // TODO: Retrieve medicine's image from database (API)
-            ContextCompat.getDrawable(this, R.drawable.placeholder)
-        )
-    }
+        // IMAGE
+        val medicineImage: ImageView = findViewById(R.id.medicineImage)
+        Glide.with(this@BuyMedicineActivity).load(medicine.image).into(medicineImage)
 
-    private fun createStockAmount(stock: String) {
+        // STOCK
         val stockAmountTextView: TextView = findViewById(R.id.stockAmount)
-        stockAmountTextView.text = stock
-    }
+        stockAmountTextView.text = stock.toString()
 
-    private fun createBuyButton() {
+        // BUY
         val buyButton: Button = findViewById(R.id.buy)
         buyButton.setOnClickListener {
             buyMedicine()
@@ -70,22 +67,27 @@ class BuyMedicineActivity : AppCompatActivity() {
         val amountEditText: EditText = findViewById(R.id.amountEdit)
         if (amountEditText.text.toString().takeIf { it.isNotBlank() } != null) {
             val insertedStock: Int = amountEditText.text.toString().toInt()
-            // TODO: Poll database for amount
-            if (insertedStock < availableStock) {
+            if (insertedStock > stock) {
                 showToast("There is not enough stock")
             }
-            // TODO: Send purchase to database
+            makePurchase(medicine.name!!, insertedStock)
+        }
+    }
 
-            // TODO: Validate purchase
-            if (true) {
+    private fun makePurchase(medicineName: String, amount: Int){
+        Log.d(TAG, "pharmacy name: $pharmacyName\nmedicine name: $medicineName")
+        db.collection("stock").document(pharmacyName + "_" + medicineName)
+            .update("amount", FieldValue.increment((-amount).toLong()))
+            .addOnSuccessListener {
                 Log.d(TAG, "Medicine bought successfully")
                 showToast("Medicine bought successfully")
                 finish()
-            } else {
+            }
+            .addOnFailureListener {
                 Log.e(TAG, "Error buying medicine")
                 showToast("Error buying medicine")
+
             }
-        }
     }
 
     private fun showToast(message: String){
