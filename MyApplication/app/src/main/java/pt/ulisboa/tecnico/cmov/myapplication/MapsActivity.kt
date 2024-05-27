@@ -31,6 +31,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
@@ -43,9 +45,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     private lateinit var mapSearchView: SearchView
     private lateinit var currentLocation: Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var auth: FirebaseAuth
     private val markers = mutableListOf<Marker>()
 
     lateinit var pharmacyRepository: PharmacyRepository
+    lateinit var favoritePharmaciesRepository: FavoritePharmaciesRepository
 
     companion object{
         private const val LOCATION_REQUEST_CODE = 1
@@ -69,9 +73,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         //createSearchBar()
         createSearchBar2()
-        createBottomNavigation()
 
+        db = Firebase.firestore
         pharmacyRepository = PharmacyRepository(this)
+        favoritePharmaciesRepository = FavoritePharmaciesRepository(this)
 
         Log.d(TAG, "Finished onCreate")
     }
@@ -80,6 +85,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     override fun onResume() {
         super.onResume()
         createBottomNavigation()
+
+        auth = Firebase.auth
+        if (auth.currentUser != null) {
+            Log.d(TAG, "ENTROU **")
+            getFavoritePharmacies()
+        }
+        //val center = mMap.cameraPosition.target
+        //findNearbyPharmaciesFirebase(center.latitude, center.longitude, object : NearbyPharmaciesFirebaseCallback {
+        //    override fun onSuccess() {}
+        //    override fun onFailure() {}
+        //})
     }
 
     private fun createMapFragment() {
@@ -211,11 +227,43 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         removeAllMarkers()
         for(pharmacy in pharmaciesList){
             val latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
-            addMarker(pharmacy.name!!, latLng)
+            if (favoritePharmaciesRepository.isFavoritePharmacy(pharmacy.name!!)) {
+                addStarMarker(pharmacy.name!!, latLng)
+            } else {
+                addMarker(pharmacy.name!!, latLng)
+            }
         }
         //for(latLng in staredPlaces){
         //    addStarMarker(latLng)
         //}
+        //private fun checkIsFavorite() {
+        //    db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
+        //        .whereEqualTo("name", pharmacyName)
+        //        .get()
+        //        .addOnSuccessListener {documents ->
+        //            isInUsersFavorite = !documents.isEmpty
+        //            findViewById<ImageButton>(R.id.favoriteIcon).isSelected = isInUsersFavorite
+        //        }
+        //}
+    }
+
+    private fun getFavoritePharmacies() {
+        favoritePharmaciesRepository.clearPharmacies()
+        db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
+            .get()
+            .addOnSuccessListener { documents ->
+                Log.d(TAG, "AQUI 1 **")
+                if (!documents.isEmpty){
+                    Log.d(TAG, "AQUI 2 **")
+                    for (data in documents.documents) {
+                        Log.d(TAG, "AQUI 3 **")
+                        val pharmacy: String? = data.getString("name")
+                        if (pharmacy != null) {
+                            favoritePharmaciesRepository.insertOrUpdate(pharmacy)
+                        }
+                    }
+                }
+            }
     }
 
     private fun getPharmacies() {
@@ -267,7 +315,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     }
 
     private fun findPharmacyFirebase(name: String, callback: PharmacyFirebaseCallback){
-        db = Firebase.firestore
         val collectionRef = db.collection("pharmacies")
         var pharmacy : PharmacyMetaData? = null
         collectionRef.whereEqualTo("name", name).get()
@@ -299,7 +346,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     private fun findNearbyPharmaciesFirebase(latitude: Double, longitude: Double, callback: NearbyPharmaciesFirebaseCallback){
         val pharmaciesList = ArrayList<PharmacyMetaData>()
-        db = Firebase.firestore
         val collectionRef =  db.collection("pharmacies")
         val query =  collectionRef.whereGreaterThan("latitude", latitude - 0.3)
             .whereLessThan("latitude", latitude + 0.3)
@@ -339,10 +385,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         marker?.let { markers.add(it) }
     }
 
-    private fun addStarMarker(latLng: LatLng){
+    private fun addStarMarker(name:String, latLng: LatLng){
         val marker = mMap.addMarker(MarkerOptions()
             .position(latLng)
-            .title("Star Marker")
+            .title(name)
             .icon(BitmapDescriptorFactory.fromResource(R.drawable.star_marker)))
         marker?.let { markers.add(it) }
     }

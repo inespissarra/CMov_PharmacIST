@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
         const val DATABASE_NAME = "cache.db"
 
         const val TABLE_PHARMACY = "pharmacy"
@@ -21,6 +21,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COLUMN_MEDICINE_IMAGE = "image"
         const val COLUMN_MEDICINE_STOCK = "stock"
         const val COLUMN_MEDICINE_PHARMACY = "pharmacy"
+
+        const val TABLE_FAVORITE_PHARMACY = "favoritePharmacy"
+        const val COLUMN_FAVORITE_PHARMACY_NAME = "name"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -41,13 +44,20 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 $COLUMN_MEDICINE_PHARMACY TEXT
             )
         """
+        val createFavoritePharmacyTable = """
+            CREATE TABLE $TABLE_FAVORITE_PHARMACY (
+                $COLUMN_FAVORITE_PHARMACY_NAME TEXT PRIMARY KEY
+            )
+        """
         db.execSQL(createPharmacyTable)
         db.execSQL(createMedicineTable)
+        db.execSQL(createFavoritePharmacyTable)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLE_PHARMACY")
         db.execSQL("DROP TABLE IF EXISTS $TABLE_MEDICINE")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_FAVORITE_PHARMACY")
         onCreate(db)
     }
 }

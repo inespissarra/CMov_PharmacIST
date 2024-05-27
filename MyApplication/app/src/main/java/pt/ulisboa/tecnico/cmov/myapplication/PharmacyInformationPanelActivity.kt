@@ -14,7 +14,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -38,7 +37,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private var pharmacyAddress: String? = null
     private lateinit var pharmacy: PharmacyMetaData
     private var pharmacyLatLng: LatLng? = null
-    private var isFavorite: Boolean = false
     private lateinit var medicineStock: MutableMap<MedicineMetaData, Int>
     private lateinit var auth: FirebaseAuth
     private var isInUsersFavorite = false
@@ -68,7 +66,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
 
         auth = Firebase.auth
         if (auth.currentUser != null) {
-            Log.d(TAG, "curretn user not null")
+            Log.d(TAG, "current user not null")
             checkIsFavorite()
         }
 
@@ -173,33 +171,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
     }
 
-    private fun createPharmacyName() {
-        val pharmacyNameTextView: TextView = findViewById(R.id.pharmacyName)
-        val intentPharmacyName = intent.getCharSequenceExtra("pharmacyName")
-        if (intentPharmacyName == null) pharmacyNameTextView.text = "ErrorName"
-        else {
-            pharmacyNameTextView.text = intentPharmacyName
-            pharmacyName = intentPharmacyName.toString()
-        }
-        if (intentPharmacyName == "ErrorName") Log.e(TAG, "Error loading pharmacy's name")
-    }
-
-    private fun createPharmacyAddress() {
-        val pharmacyLocationTextView: TextView = findViewById(R.id.pharmacyLocation)
-        var intentPharmacyLocation = intent.getCharSequenceExtra("address")
-        if (intentPharmacyLocation == null) {
-            if (pharmacyLocation == null) Log.e(TAG, "Error loading pharmacy's location")
-            intentPharmacyLocation = pharmacyLocation
-        }
-        pharmacyLocationTextView.text = intentPharmacyLocation ?: "ErrorLocation"
-        pharmacyAddress = intentPharmacyLocation.toString()
-    }
-
-    private fun createPharmacyImage() {
-        val image: ImageView = findViewById(R.id.pharmacyImage)
-        Glide.with(this).load(pharmacyImageUrl).into(image)
-    }
-
     private fun queryDB() {
         val connectivityFlag = checkConnectivity(this)
         db.collection("pharmacies").get()
@@ -223,21 +194,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         ratingBar.rating = 3.5F
     }
 
-    private fun createFavoriteStar() {
-        val favoriteStar: ImageView = findViewById(R.id.favoriteIcon)
-        favoriteStar.setOnClickListener {
-            isFavorite = !isFavorite
-            // TODO: Update database
-            if (isFavorite)
-                favoriteStar.setImageDrawable(
-                    ContextCompat.getDrawable(this, R.drawable.favorite_star_on)
-                )
-            else
-                favoriteStar.setImageDrawable(
-                    ContextCompat.getDrawable(this, R.drawable.favorite_star_off)
-                )
-        }
-    }
 
     private fun createGoToPharmacy() {
         val goToPharmacy: ImageView = findViewById(R.id.gotoPharmacy)
