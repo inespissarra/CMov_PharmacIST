@@ -49,7 +49,6 @@
         <activity android:name=".SelectLocationActivity" />
         <activity android:name=".MedicineInformationPanelActivity" />
         <activity android:name=".AddMedicineActivity" />
-        <activity android:name=".AddStockActivity" />
         <activity android:name=".BuyMedicineActivity" />
         <activity android:name=".PharmacyInformationPanelActivity" />
         <activity android:name=".DirectionsActivity" />

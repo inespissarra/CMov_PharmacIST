@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,7 +36,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
         private const val CAMERA_REQUEST_CODE = 100
         private const val STORAGE_REQUEST_CODE = 101
 
-        private const val TAG = "AddStockActivity"
+        private const val TAG = "ScanBarcodeActivity"
     }
 
     private var imageUri: Uri?= null
@@ -106,7 +105,12 @@ class ScanBarcodeActivity : AppCompatActivity() {
                     resultText.text = "Barcode: $barcode\nBarcode matches existent stock"
                     addRegisterButton.text = "Add stock to medicine"
                     addRegisterButton.setOnClickListener {
-                        addAmountDialog(medicine.name!!)
+                        addAmountDialog(medicine.name!!, object: AddAmoutCallback{
+                            override fun onSuccess(){
+                                finish()
+                            }
+                            override fun onFailure(){}
+                        })
                     }
                 }
                 else {
@@ -117,6 +121,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
                         intent.putExtra("pharmacyName", pharmacyName)
                         intent.putExtra("barcode", barcode)
                         this.startActivity(intent)
+                        finish()
                     }
                 }
             }
@@ -229,7 +234,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
         }
     }
 
-    private fun addAmountDialog(medicine: String) {
+    private fun addAmountDialog(medicine: String, callback: AddAmoutCallback) {
         var amount : Int? = null
         val inflater = layoutInflater
         val dialogLayout = inflater.inflate(R.layout.amount_dialog_box_layout, null)
@@ -241,14 +246,20 @@ class ScanBarcodeActivity : AppCompatActivity() {
             .setPositiveButton("OK") { dialog, which ->
                 amount = editText.text.toString().toInt()
                 addAmountToMedicine(medicine, amount!!)
+                callback.onSuccess()
             }
             . setNegativeButton("Cancel") { dialog, which ->
                 Log.d(TAG, "Cancel button clicked")
                 dialog.dismiss()
+                callback.onFailure()
             }
             .create()
 
         dialog.show()
+    }
+    interface AddAmoutCallback {
+        fun onSuccess()
+        fun onFailure()
     }
 
     private fun addAmountToMedicine(medicineName: String, amount: Int) {

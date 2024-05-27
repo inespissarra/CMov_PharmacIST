@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -20,7 +19,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -48,8 +46,6 @@ class AddMedicineActivity : AppCompatActivity() {
         Log.d(TAG, "onCreate Started")
 
         setContentView(R.layout.activity_add_medicine)
-
-        createBottomNavigation()
 
         imageIv = findViewById(R.id.photo)
 
@@ -99,6 +95,7 @@ class AddMedicineActivity : AppCompatActivity() {
         val medicine = hashMapOf(
             "name" to medicineName,
             "description" to purpose,
+            "barcode" to barcode,
             "image" to imageUri
         )
         db.collection("medicines").document(medicineName)
@@ -135,12 +132,6 @@ class AddMedicineActivity : AppCompatActivity() {
             }
     }
 
-    private fun pickImageGallery() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        galleryActivityResultLauncher.launch(intent)
-    }
-
     private fun pickImageCamera(){
         val contentValues = ContentValues()
         contentValues.put(MediaStore.Images.Media.TITLE, "Sample Image")
@@ -151,6 +142,28 @@ class AddMedicineActivity : AppCompatActivity() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
         cameraActivityResultLauncher.launch(intent)
+    }
+
+    private val cameraActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+            result ->
+        if(result.resultCode == Activity.RESULT_OK){
+            //val data = result.data
+
+            //imageUri = data?.data
+            Log.d(TAG, "cameraActivityResult: imageUri: $imageUri")
+            imageIv.setImageURI(imageUri)
+        }
+        else{
+            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun pickImageGallery() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        galleryActivityResultLauncher.launch(intent)
     }
 
     private val galleryActivityResultLauncher = registerForActivityResult(
@@ -166,22 +179,6 @@ class AddMedicineActivity : AppCompatActivity() {
             imageIv.setImageURI(imageUri)
         }
         else {
-            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private val cameraActivityResultLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-            result ->
-        if(result.resultCode == Activity.RESULT_OK){
-            val data = result.data
-
-            imageUri = data?.data
-            Log.d(TAG, "cameraActivityResult: imageUri: $imageUri")
-            imageIv.setImageURI(imageUri)
-        }
-        else{
             Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
         }
     }
@@ -220,31 +217,6 @@ class AddMedicineActivity : AppCompatActivity() {
             )
         }
         return checkStoragePermissions()
-    }
-
-    private fun createBottomNavigation() {
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
-        bottomNavigationView.selectedItemId = R.id.invisible
-        bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
-            when (item.itemId) {
-                R.id.nav_map -> {
-                    //startActivity(Intent(applicationContext, MapsActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.nav_medicine -> {
-                    startActivity(Intent(applicationContext, MedicineActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.nav_profile -> {
-                    startActivity(Intent(applicationContext, ProfileActivity::class.java))
-                    finish()
-                    true
-                }
-                else -> false
-            }
-        }
     }
 
     private fun showToast(message: String){

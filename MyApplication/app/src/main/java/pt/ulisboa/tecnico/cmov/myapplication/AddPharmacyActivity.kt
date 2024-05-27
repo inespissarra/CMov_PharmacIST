@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -22,14 +21,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
-import java.net.URL
-
-//import com.google.firebase.storage.ktx.storage
 
 
 class AddPharmacyActivity : AppCompatActivity() {
@@ -56,8 +51,6 @@ class AddPharmacyActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_pharmacy)
-
-        createBottomNavigation()
 
         pharmacyPhoto = findViewById(R.id.photo)
         pharmacyPhotoName = findViewById<TextView>(R.id.photoField)!!
@@ -197,31 +190,6 @@ class AddPharmacyActivity : AppCompatActivity() {
         fun onFailure(exception: Exception)
     }
 
-    private fun createBottomNavigation() {
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
-        bottomNavigationView.selectedItemId = R.id.invisible
-        bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
-            when (item.itemId) {
-                R.id.nav_map -> {
-                    //startActivity(Intent(applicationContext, MapsActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.nav_medicine -> {
-                    startActivity(Intent(applicationContext, MedicineActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.nav_profile -> {
-                    startActivity(Intent(applicationContext, ProfileActivity::class.java))
-                    finish()
-                    true
-                }
-                else -> false
-            }
-        }
-    }
-
    private fun pickImageCamera(){
        val contentValues = ContentValues()
        contentValues.put(MediaStore.Images.Media.TITLE, "Sample Image")
@@ -242,10 +210,9 @@ class AddPharmacyActivity : AppCompatActivity() {
 
             Log.d(TAG, "cameraActivityResult: imageUri: $imageUri")
             pharmacyPhoto.setImageURI(imageUri)
-            pharmacyPhotoName.setText("$imageUri")
 
             val name = imageUri?.path?.substringAfterLast('/', "")
-            pharmacyPhotoName.setText(" Name: " + name)
+            pharmacyPhotoName.setText(" Name: $name")
         }
         else{
             Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()

@@ -6,7 +6,6 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -19,10 +18,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -67,10 +64,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         // createFavoriteStar()
         createGoToPharmacy()
 
-        createStockList()
         createManageStock()
-
-        // createBottomNavigation()
 
         auth = Firebase.auth
         if (auth.currentUser != null) {
@@ -97,6 +91,11 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         }
 
         Log.d(TAG, "onCreate finished")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        createStockList()
     }
 
     private fun addToFavorite() {
@@ -264,10 +263,10 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             startActivity(intent)
         }
 
-        eventChangeListener()
+        getStock()
     }
 
-    private fun eventChangeListener() {
+    private fun getStock() {
         db = Firebase.firestore
         db.collection("stock")
             .whereEqualTo("pharmacy", pharmacyName)
@@ -325,29 +324,4 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         }
         return 0
     }
-
-    /*private fun createBottomNavigation() {
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
-        bottomNavigationView.selectedItemId = R.id.invisible
-        bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
-            when (item.itemId) {
-                R.id.nav_map -> {
-                    //startActivity(Intent(applicationContext, MapsActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.nav_medicine -> {
-                    startActivity(Intent(applicationContext, MedicineActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.nav_profile -> {
-                    startActivity(Intent(applicationContext, ProfileActivity::class.java))
-                    finish()
-                    true
-                }
-                else -> false
-            }
-        }
-    }*/
 }
