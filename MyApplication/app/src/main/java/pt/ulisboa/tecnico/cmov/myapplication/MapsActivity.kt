@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.cmov.myapplication
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -33,6 +34,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import java.io.IOException
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
@@ -152,8 +154,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         mapSearchView = findViewById(R.id.mapSearchView) as SearchView
 
         mapSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(s: String): Boolean {
-                getPharmacy(s)
+            override fun onQueryTextSubmit(name: String): Boolean {
+                val pharmacyExists = getPharmacy(name)
+                if (!pharmacyExists){
+                    val geocoder = Geocoder(this@MapsActivity)
+                    try {
+                        val addressList = geocoder.getFromLocationName(name, 1)
+                        if (addressList!=null) {
+                            val address = addressList[0]
+                            val latLng = LatLng(address.latitude, address.longitude)
+                            zoomOnMap(latLng)
+                        }
+                    } catch (e : IOException){
+                        Log.e(TAG, e.toString())
+                    }
+
+
+                }
                 return false
             }
 
@@ -281,8 +298,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         }
     }
 
-    private fun getPharmacy(name: String) {
+    private fun getPharmacy(name: String) : Boolean{
         val pharmacy : PharmacyMetaData? = pharmacyRepository.getPharmacy(name)
+        var pharmacyExists = false
         if (pharmacy == null) {
             findPharmacyFirebase(name, object :PharmacyFirebaseCallback{
                 override fun onSuccess(pharmacy: PharmacyMetaData) {
@@ -290,18 +308,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                     val location = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
                     addMarker(pharmacy.name!!, location)
                     zoomOnMap(location)
+                    pharmacyExists = true
                 }
-
                 override fun onFailure() {
-                    showToast("Pharmacy not found")
+                    showToast("There are no pharmacies with the given name")
                 }
             })
         } else {
+            pharmacyExists = true
             removeAllMarkers()
             val location = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
             addMarker(pharmacy.name!!, location)
             zoomOnMap(location)
         }
+        return pharmacyExists
     }
 
     private fun updatePharmaciesCache(pharmaciesList : ArrayList<PharmacyMetaData>){

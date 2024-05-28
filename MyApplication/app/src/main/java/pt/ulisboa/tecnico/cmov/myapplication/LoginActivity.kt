@@ -22,6 +22,13 @@ class LoginActivity : AppCompatActivity() {
 
         ConnectivityUtils.initialize(this)
 
+        auth = Firebase.auth
+
+        if (auth.currentUser != null) {
+            startActivity(Intent(this, MapsActivity::class.java))
+            finish()
+        }
+
         enableEdgeToEdge()
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -47,7 +54,6 @@ class LoginActivity : AppCompatActivity() {
 
         binding.signUpText.setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
-            finish()
         }
 
         binding.loginGuest.setOnClickListener {
