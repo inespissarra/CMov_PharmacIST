@@ -13,8 +13,8 @@ class MedicineRepository(context: Context) {
         val contentValues = ContentValues().apply {
             put(DatabaseHelper.COLUMN_MEDICINE_NAME, medicine.name)
             put(DatabaseHelper.COLUMN_MEDICINE_IMAGE, medicine.image)
-            put(DatabaseHelper.COLUMN_MEDICINE_STOCK, medicine.stock)
-            put(DatabaseHelper.COLUMN_MEDICINE_PHARMACY, medicine.pharmacy)
+            //put(DatabaseHelper.COLUMN_MEDICINE_STOCK, medicine.stock)
+            //put(DatabaseHelper.COLUMN_MEDICINE_PHARMACY, medicine.pharmacy)
         }
         db.insertWithOnConflict(DatabaseHelper.TABLE_MEDICINE, null, contentValues, SQLiteDatabase.CONFLICT_REPLACE)
     }
@@ -32,7 +32,7 @@ class MedicineRepository(context: Context) {
                 return MedicineMetaData(
                     it.getString(it.getColumnIndexOrThrow(DatabaseHelper.COLUMN_MEDICINE_NAME)),
                     it.getString(it.getColumnIndexOrThrow(DatabaseHelper.COLUMN_MEDICINE_IMAGE)),
-                    it.getInt(it.getColumnIndexOrThrow(DatabaseHelper.COLUMN_MEDICINE_STOCK)),
+                    //it.getInt(it.getColumnIndexOrThrow(DatabaseHelper.COLUMN_MEDICINE_STOCK)),
                     it.getString(it.getColumnIndexOrThrow(DatabaseHelper.COLUMN_MEDICINE_PHARMACY))
                 )
             }

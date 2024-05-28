@@ -4,12 +4,9 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class MedicineMetaData(var name: String? = null, var image: String? = null,
-    var stock: Int? = null, var pharmacy: String? = null,
     var description: String? = null, var barcode: String? = null) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
-        parcel.readString(),
-        parcel.readInt(),
         parcel.readString(),
         parcel.readString(),
         parcel.readString()
@@ -19,8 +16,8 @@ data class MedicineMetaData(var name: String? = null, var image: String? = null,
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
         parcel.writeString(image)
-        if (stock != null) parcel.writeInt(stock!!)
-        parcel.writeString(pharmacy)
+        parcel.writeString(description)
+        parcel.writeString(barcode)
     }
 
     override fun describeContents(): Int {
@@ -36,6 +33,4 @@ data class MedicineMetaData(var name: String? = null, var image: String? = null,
             return arrayOfNulls(size)
         }
     }
-
-
 }

@@ -1,18 +1,24 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import pt.ulisboa.tecnico.cmov.myapplication.databinding.ActivityMedicineBinding
@@ -22,6 +28,7 @@ class MedicineActivity : AppCompatActivity() {
 
     companion object {
         val TAG = "MedicineActivity"
+        private const val LOCATION_REQUEST_CODE = 1
     }
 
     private var db: FirebaseFirestore = Firebase.firestore
@@ -30,8 +37,10 @@ class MedicineActivity : AppCompatActivity() {
     private lateinit var adapter: MedicineAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
-    private var medicineList: ArrayList<MedicineMetaData> = ArrayList()
-    private var filteredList: ArrayList<MedicineMetaData> = ArrayList()
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var currentLocation: LatLng? = null
+    private var medicineList: ArrayList<MedicinePharmacyDBEntryData> = ArrayList()
+    private var filteredList: ArrayList<MedicinePharmacyDBEntryData> = ArrayList()
     private var lastFetch: DocumentSnapshot? = null
     private var isLoading: Boolean = false
     private var hasMoreData: Boolean = true
@@ -64,7 +73,7 @@ class MedicineActivity : AppCompatActivity() {
 
         adapter.onItemClick = {
             val intent = Intent(this, MedicineInformationPanelActivity::class.java)
-            intent.putExtra("medicine", it)
+            intent.putExtra("medicine", it.medicineMetaData)
             startActivity(intent)
         }
 
@@ -101,48 +110,125 @@ class MedicineActivity : AppCompatActivity() {
             }
         })
 
-        loadData()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        getUserLocationAndLoadData()
 
         Log.d(TAG, "onCreate finished")
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+            LOCATION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "onRequestPermissionsResult - User granted permission")
+                    loadData()
+                }
+                else Toast.makeText(this, "The app requires location for some features", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun checkLocationPermission() : Boolean {
+        return (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED) /*||
+            ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED)*/
+    }
+
+    private fun requestUserLocation() {
+        ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+            LOCATION_REQUEST_CODE)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getUserLocationAndLoadData() {
+        if (!checkLocationPermission()) {
+            Log.d(TAG, "getUserLocationAndLoadData - Asking user for permission")
+            requestUserLocation()
+            return
+        }
+        fusedLocationClient.lastLocation.addOnSuccessListener(this) { location ->
+            currentLocation = LatLng(location.latitude, location.longitude)
+            Log.d(TAG, "getUserLocationAndLoadData - Got location")
+            loadData()
+        }.addOnFailureListener {
+            Log.d(TAG, "getUserLocationAndLoadData - Error getting location")
+            loadData()
+        }
     }
 
     private fun loadData() {
         Log.d(TAG, "Loading data from DB")
         isLoading = true
-        var query: Query
 
-        query = db.collection("medicines").limit(10).orderBy("name")
+        var query = db.collection("medicines").limit(10).orderBy("name")
 
         lastFetch?.let {
             query = query.startAfter(it)
         }
 
         query.get().addOnSuccessListener { documents ->
-            val initialSize = filteredList.size
+            if (documents.size() < 10) hasMoreData = false
+
+            Log.d(TAG, "Documents: $documents")
+
             for (document in documents) {
-                val item = document.toObject(MedicineMetaData::class.java)
-                if (!medicineList.contains(item)) {
-                    medicineList.add(item)
-                }
-                if (!filteredList.contains(item)) {
-                    filteredList.add(item)
-                }
+                Log.d(TAG, "Found document ${document.data}")
+                val medicineMetaData = document.toObject(MedicineMetaData::class.java)
+                Log.d(TAG, "Registered MedicineMetaData = $medicineMetaData")
+                val pharmaciesMap = hashMapOf<String, Pair<PharmacyMetaData, Int>>()
+
+                document.reference.collection("pharmacies").get()
+                    .addOnSuccessListener { pharmacies ->
+                        for (pharmacyDoc in pharmacies) {
+                            val pharmacyData = pharmacyDoc.toObject(PharmacyMetaData::class.java)
+                            val stock = pharmacyDoc.getLong("stock")?.toInt() ?: 0
+                            pharmaciesMap[pharmacyData.name!!] = Pair(pharmacyData, stock)
+                            Log.d(TAG, "Registered pharmacy = $pharmacyData with $stock stock")
+                        }
+
+                        val item = MedicinePharmacyDBEntryData(
+                            medicineMetaData = medicineMetaData,
+                            pharmacyMap = pharmaciesMap
+                        )
+
+                        Log.d(TAG, "Registered Item = $item")
+                        // Add the medicine to the list if it's not already there
+                        if (!medicineList.any { it.medicineMetaData == item.medicineMetaData }) {
+                            medicineList.add(item)
+                            filteredList.add(item)
+                            // Get the closest pharmacy for each medicine
+                            if (item.pharmacyMap != null && item.pharmacyMap!!.isNotEmpty() && currentLocation != null) {
+                                Log.d(TAG, "Medicine has pharmacies & Location is $currentLocation")
+                                val sortedPharmacies = item.pharmacyMap?.filterValues { it.second > 0 }?.values?.sortedBy {
+                                    it.first.getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
+                                }?.toCollection(ArrayList()) ?: ArrayList()
+                                Log.d(TAG, "Pharmacies sorted = $sortedPharmacies")
+                                item.closestPharmacy = sortedPharmacies[0].first
+                                Log.d(TAG, "Closest pharmacy = ${item.closestPharmacy}")
+                                item.closestDistance = String.format("%.1f", item.closestPharmacy!!
+                                    .getDistance(currentLocation!!.latitude, currentLocation!!.longitude)).toDouble()
+                                Log.d(TAG, "Closest pharmacy to ${item.medicineMetaData?.name} is ${item.closestDistance} meters away")
+                            }
+                            adapter.notifyItemChanged(filteredList.size - 1)
+                        }
+                    }
             }
             if (!documents.isEmpty) {
                 lastFetch = documents.documents[documents.size() - 1]
             }
-            if (initialSize == filteredList.size) {
-                hasMoreData = false
-            } else {
-                Log.d(TAG, "Notifying change from $initialSize to ${filteredList.size}")
-                adapter.notifyItemRangeChanged(initialSize, filteredList.size)
-            }
+            isLoading = false
+            Log.d(TAG, "Finished loading data from DB, medicineList=$medicineList, filteredList=$filteredList")
         }.addOnFailureListener {
             Toast.makeText(this, "Error loading data from DB", Toast.LENGTH_SHORT).show()
         }
-
-        isLoading = false
-        Log.d(TAG, "Finished loading data from DB, medicineList=$medicineList, filteredList=$filteredList")
     }
 
     private fun searchMedicine(query: String?, new: Boolean) {
@@ -151,8 +237,10 @@ class MedicineActivity : AppCompatActivity() {
             inSearch = true
 
             medicineList.filterTo(filteredList) {
-                it.name?.lowercase()?.contains(query.lowercase(Locale.getDefault())) == true
+                it.medicineMetaData?.name?.lowercase()?.contains(query.lowercase(Locale.getDefault())) == true
             }
+
+            Log.d(TAG, "searchMedicine - Filtered list = $filteredList")
 
             if (query.length >= 2 && new && hasMoreData) {
                 db.collection("medicines")
@@ -162,18 +250,56 @@ class MedicineActivity : AppCompatActivity() {
                     .get()
                     .addOnSuccessListener { documents ->
                             for (document in documents) {
-                                val medicine = document.toObject(MedicineMetaData::class.java)
-                                if (!filteredList.contains(medicine)) {
-                                    filteredList.add(medicine)
-                                    if (!medicineList.contains(medicine)) {
-                                        medicineList.add(medicine)
+
+                                val medicineMetaData = document.toObject(MedicineMetaData::class.java)
+                                Log.d(TAG, "searchMedicine - Registered MedicineMetaData = $medicineMetaData")
+                                val pharmaciesMap = hashMapOf<String, Pair<PharmacyMetaData, Int>>()
+
+                                document.reference.collection("pharmacies").get()
+                                    .addOnSuccessListener { pharmacies ->
+                                        for (pharmacyDoc in pharmacies) {
+                                            val pharmacyData = pharmacyDoc.toObject(PharmacyMetaData::class.java)
+                                            val stock = pharmacyDoc.getLong("stock")?.toInt() ?: 0
+                                            pharmaciesMap[pharmacyData.name!!] = Pair(pharmacyData, stock)
+                                            Log.d(TAG, "searchMedicine - Registered pharmacy = $pharmacyData with $stock stock")
+                                        }
+
+                                        val item = MedicinePharmacyDBEntryData(
+                                            medicineMetaData = medicineMetaData,
+                                            pharmacyMap = pharmaciesMap
+                                        )
+
+                                        if (!filteredList.any { it.medicineMetaData == item.medicineMetaData }) {
+                                            filteredList.add(item)
+                                            if (!medicineList.any { it.medicineMetaData == item.medicineMetaData }) {
+                                                medicineList.add(item)
+                                            }
+                                        }
+
+                                        // Add the medicine to the list if it's not already there
+                                        if (!medicineList.any { it.medicineMetaData == item.medicineMetaData }) {
+                                            medicineList.add(item)
+                                            filteredList.add(item)
+                                            // Get the closest pharmacy for each medicine
+                                            if (item.pharmacyMap != null && item.pharmacyMap!!.isNotEmpty() && currentLocation != null) {
+                                                val sortedPharmacies = item.pharmacyMap?.filterValues { it.second > 0 }?.values?.sortedBy {
+                                                    it.first.getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
+                                                } as ArrayList<PharmacyMetaData>
+                                                item.closestPharmacy = sortedPharmacies[0]
+                                                item.closestDistance = item.closestPharmacy!!
+                                                    .getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
+                                            }
+                                        }
                                     }
-                                }
                             }
+                            adapter.notifyDataSetChanged()
                         }.
                         addOnFailureListener {
-                            Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Error querying DB", Toast.LENGTH_SHORT).show()
                         }
+            }
+            else {
+                adapter.notifyDataSetChanged()
             }
             if (filteredList.isEmpty() && new) {
                 Toast.makeText(this, "No medicine found", Toast.LENGTH_SHORT).show()
@@ -181,10 +307,11 @@ class MedicineActivity : AppCompatActivity() {
         } else {
             inSearch = false
             filteredList.addAll(medicineList)
+            adapter.notifyDataSetChanged()
         }
-        adapter.notifyDataSetChanged()
     }
 
+    /*
     private fun eventChangeListener() {
 
         db = Firebase.firestore
@@ -206,6 +333,7 @@ class MedicineActivity : AppCompatActivity() {
                 }
 
     }
+    */
 
     private fun displayProgressPopUp() {
         val builder = AlertDialog.Builder(this@MedicineActivity)

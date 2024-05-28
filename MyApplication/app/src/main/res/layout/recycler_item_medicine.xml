@@ -29,8 +29,8 @@
 
         <TextView
             android:id="@+id/recMedicineName"
-            android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
@@ -41,6 +41,42 @@
             android:text="Name"
             android:textColor="@color/green_4"
             android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/pharmacyName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/recMedicineName"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="-4dp"
+            android:layout_toEndOf="@+id/recMedicineImage"
+            android:textColor="@color/green_4"
+            android:textSize="12sp"
+            android:text="Pharmacy" />
+
+        <TextView
+            android:id="@+id/hyphen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/recMedicineName"
+            android:layout_marginTop="-4dp"
+            android:layout_marginStart="2dp"
+            android:layout_toEndOf="@id/pharmacyName"
+            android:text="-"
+            android:textColor="@color/green_4"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/pharmacyDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/recMedicineName"
+            android:layout_marginTop="-4dp"
+            android:layout_marginStart="2dp"
+            android:layout_toEndOf="@id/hyphen"
+            android:text="Placeholder m"
+            android:textColor="@color/green_4"
+            android:textSize="12sp" />
 
     </RelativeLayout>
 

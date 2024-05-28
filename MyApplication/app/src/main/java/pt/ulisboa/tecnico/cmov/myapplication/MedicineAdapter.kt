@@ -12,14 +12,16 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class MedicineAdapter(private val context: Context, private var dataList: ArrayList<MedicineMetaData>)
+class MedicineAdapter(private val context: Context, private var dataList: ArrayList<MedicinePharmacyDBEntryData>)
     : RecyclerView.Adapter<MedicineAdapter.MedicineViewHolder>() {
-    var onItemClick : ((MedicineMetaData) -> Unit)? = null
+    var onItemClick : ((MedicinePharmacyDBEntryData) -> Unit)? = null
 
     inner class MedicineViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val recImage: ImageView = itemView.findViewById(R.id.recMedicineImage)
         val recName: TextView = itemView.findViewById(R.id.recMedicineName)
-
+        val hyphenText: TextView = itemView.findViewById(R.id.hyphen)
+        val pharmacyName: TextView = itemView.findViewById(R.id.pharmacyName)
+        val pharmacyDistance: TextView = itemView.findViewById(R.id.pharmacyDistance)
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MedicineViewHolder {
         val view: View = LayoutInflater.from(parent.context).inflate(R.layout.recycler_item_medicine, parent, false)
@@ -33,20 +35,36 @@ class MedicineAdapter(private val context: Context, private var dataList: ArrayL
     override fun onBindViewHolder(holder: MedicineViewHolder, position: Int) {
         val medicine = dataList[position]
 
-        if (checkConnectivity(context) == 2) {
-            Glide.with(context).load(medicine.image).into(holder.recImage)
+        if (checkConnectivity(context) == 2 && medicine.medicineMetaData?.image != null) {
+            Glide.with(context).load(medicine.medicineMetaData!!.image).into(holder.recImage)
         } else {
             Glide.with(context).load(R.drawable.placeholder).into(holder.recImage)
         }
-        holder.recName.text = medicine.name?.capitalizeFirstLetter()
+        if (medicine.medicineMetaData?.name != null) {
+            holder.recName.text = medicine.medicineMetaData!!.name?.capitalizeFirstLetter()
+        } else {
+            holder.recName.text = "Name not found"
+        }
+
+        if (medicine.closestPharmacy != null) {
+            holder.pharmacyName.text = medicine.closestPharmacy?.name
+            holder.hyphenText.text = "-"
+        } else {
+            holder.pharmacyName.text = "Not found in any pharmacy"
+            holder.hyphenText.text = ""
+            holder.pharmacyDistance.text = ""
+        }
+        if (medicine.closestDistance != null) {
+            holder.pharmacyDistance.text = "${medicine.closestDistance.toString()} m"
+        }
 
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(medicine)
         }
 
         holder.recImage.setOnClickListener {
-            if (checkConnectivity(context) != 0) {
-                Glide.with(context).load(medicine.image).into(holder.recImage)
+            if (checkConnectivity(context) != 0 && medicine.medicineMetaData?.image != null) {
+                Glide.with(context).load(medicine.medicineMetaData!!.image).into(holder.recImage)
             }
         }
     }
@@ -57,7 +75,7 @@ class MedicineAdapter(private val context: Context, private var dataList: ArrayL
         }
     }
 
-    fun setMedicineList(searchList: ArrayList<MedicineMetaData>) {
+    fun setMedicineList(searchList: ArrayList<MedicinePharmacyDBEntryData>) {
         dataList = searchList
     }
 
