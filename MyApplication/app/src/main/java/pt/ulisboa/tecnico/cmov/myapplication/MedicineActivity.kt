@@ -184,6 +184,14 @@ class MedicineActivity : AppCompatActivity() {
                 val medicineMetaData = document.toObject(MedicineMetaData::class.java)
                 Log.d(TAG, "Registered MedicineMetaData = $medicineMetaData")
                 val pharmaciesMap = hashMapOf<String, Pair<PharmacyMetaData, Int>>()
+                val item = MedicinePharmacyDBEntryData(
+                    medicineMetaData = medicineMetaData
+                )
+
+                if (!medicineList.any { it.medicineMetaData == medicineMetaData }) {
+                    medicineList.add(item)
+                    filteredList.add(item)
+                } else continue
 
                 document.reference.collection("pharmacies").get()
                     .addOnSuccessListener { pharmacies ->
@@ -194,31 +202,23 @@ class MedicineActivity : AppCompatActivity() {
                             Log.d(TAG, "Registered pharmacy = $pharmacyData with $stock stock")
                         }
 
-                        val item = MedicinePharmacyDBEntryData(
-                            medicineMetaData = medicineMetaData,
-                            pharmacyMap = pharmaciesMap
-                        )
+                        item.pharmacyMap = pharmaciesMap
 
                         Log.d(TAG, "Registered Item = $item")
-                        // Add the medicine to the list if it's not already there
-                        if (!medicineList.any { it.medicineMetaData == item.medicineMetaData }) {
-                            medicineList.add(item)
-                            filteredList.add(item)
-                            // Get the closest pharmacy for each medicine
-                            if (item.pharmacyMap != null && item.pharmacyMap!!.isNotEmpty() && currentLocation != null) {
-                                Log.d(TAG, "Medicine has pharmacies & Location is $currentLocation")
-                                val sortedPharmacies = item.pharmacyMap?.filterValues { it.second > 0 }?.values?.sortedBy {
-                                    it.first.getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
-                                }?.toCollection(ArrayList()) ?: ArrayList()
-                                Log.d(TAG, "Pharmacies sorted = $sortedPharmacies")
-                                item.closestPharmacy = sortedPharmacies[0].first
-                                Log.d(TAG, "Closest pharmacy = ${item.closestPharmacy}")
-                                item.closestDistance = String.format("%.1f", item.closestPharmacy!!
-                                    .getDistance(currentLocation!!.latitude, currentLocation!!.longitude)).toDouble()
-                                Log.d(TAG, "Closest pharmacy to ${item.medicineMetaData?.name} is ${item.closestDistance} meters away")
-                            }
-                            adapter.notifyItemChanged(filteredList.size - 1)
+                        // Get the closest pharmacy for each medicine
+                        if (item.pharmacyMap != null && item.pharmacyMap!!.isNotEmpty() && currentLocation != null) {
+                            Log.d(TAG, "Medicine has pharmacies & Location is $currentLocation")
+                            val sortedPharmacies = item.pharmacyMap?.filterValues { it.second > 0 }?.values?.sortedBy {
+                                it.first.getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
+                            }?.toCollection(ArrayList()) ?: ArrayList()
+                            Log.d(TAG, "Pharmacies sorted = $sortedPharmacies")
+                            item.closestPharmacy = sortedPharmacies[0].first
+                            Log.d(TAG, "Closest pharmacy = ${item.closestPharmacy}")
+                            item.closestDistance = String.format("%.1f", item.closestPharmacy!!
+                                .getDistance(currentLocation!!.latitude, currentLocation!!.longitude)).toDouble()
+                            Log.d(TAG, "Closest pharmacy to ${item.medicineMetaData?.name} is ${item.closestDistance} meters away")
                         }
+                        adapter.notifyItemChanged(filteredList.size - 1)
                     }
             }
             if (!documents.isEmpty) {
@@ -255,6 +255,17 @@ class MedicineActivity : AppCompatActivity() {
                                 Log.d(TAG, "searchMedicine - Registered MedicineMetaData = $medicineMetaData")
                                 val pharmaciesMap = hashMapOf<String, Pair<PharmacyMetaData, Int>>()
 
+                                val item = MedicinePharmacyDBEntryData(
+                                    medicineMetaData = medicineMetaData
+                                )
+
+                                if (!filteredList.any { it.medicineMetaData == item.medicineMetaData }) {
+                                    filteredList.add(item)
+                                    if (!medicineList.any { it.medicineMetaData == item.medicineMetaData }) {
+                                        medicineList.add(item)
+                                    }
+                                } else continue
+
                                 document.reference.collection("pharmacies").get()
                                     .addOnSuccessListener { pharmacies ->
                                         for (pharmacyDoc in pharmacies) {
@@ -264,31 +275,16 @@ class MedicineActivity : AppCompatActivity() {
                                             Log.d(TAG, "searchMedicine - Registered pharmacy = $pharmacyData with $stock stock")
                                         }
 
-                                        val item = MedicinePharmacyDBEntryData(
-                                            medicineMetaData = medicineMetaData,
-                                            pharmacyMap = pharmaciesMap
-                                        )
+                                        item.pharmacyMap = pharmaciesMap
 
-                                        if (!filteredList.any { it.medicineMetaData == item.medicineMetaData }) {
-                                            filteredList.add(item)
-                                            if (!medicineList.any { it.medicineMetaData == item.medicineMetaData }) {
-                                                medicineList.add(item)
-                                            }
-                                        }
-
-                                        // Add the medicine to the list if it's not already there
-                                        if (!medicineList.any { it.medicineMetaData == item.medicineMetaData }) {
-                                            medicineList.add(item)
-                                            filteredList.add(item)
-                                            // Get the closest pharmacy for each medicine
-                                            if (item.pharmacyMap != null && item.pharmacyMap!!.isNotEmpty() && currentLocation != null) {
-                                                val sortedPharmacies = item.pharmacyMap?.filterValues { it.second > 0 }?.values?.sortedBy {
-                                                    it.first.getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
-                                                } as ArrayList<PharmacyMetaData>
-                                                item.closestPharmacy = sortedPharmacies[0]
-                                                item.closestDistance = item.closestPharmacy!!
-                                                    .getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
-                                            }
+                                        // Get the closest pharmacy for each medicine
+                                        if (item.pharmacyMap!!.isNotEmpty() && currentLocation != null) {
+                                            val sortedPharmacies = item.pharmacyMap?.filterValues { it.second > 0 }?.values?.sortedBy {
+                                                it.first.getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
+                                            } as ArrayList<PharmacyMetaData>
+                                            item.closestPharmacy = sortedPharmacies[0]
+                                            item.closestDistance = item.closestPharmacy!!
+                                                .getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
                                         }
                                     }
                             }
