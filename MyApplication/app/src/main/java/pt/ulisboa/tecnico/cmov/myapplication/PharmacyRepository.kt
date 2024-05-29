@@ -24,7 +24,7 @@ class PharmacyRepository(context: Context) {
         val cursor = db.query(
             DatabaseHelper.TABLE_PHARMACY,
             null,
-            "${DatabaseHelper.COLUMN_PHARMACY_NAME} = ?",
+            "${DatabaseHelper.COLUMN_PHARMACY_NAME} COLLATE NOCASE = ?",
             arrayOf(name),
             null, null, null
         )

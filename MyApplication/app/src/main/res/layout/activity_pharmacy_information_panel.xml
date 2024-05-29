@@ -16,6 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="23dp"
+            android:paddingBottom="100dp"
             android:orientation="vertical">
 
             <ImageView
@@ -24,9 +25,6 @@
                 android:layout_height="180dp"
                 android:contentDescription="@string/pharmacy_image"
                 android:scaleType="centerCrop"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/frameLayout"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
             <LinearLayout
@@ -49,9 +47,7 @@
                         android:layout_marginTop="8dp"
                         android:text="@string/pharmacy_name"
                         android:textSize="32sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/pharmacyImage" />
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/pharmacyLocation"
@@ -60,9 +56,7 @@
                         android:layout_marginStart="32dp"
                         android:layout_marginTop="8dp"
                         android:text="@string/address"
-                        android:textSize="18sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/ratingBar" />
+                        android:textSize="18sp" />
 
                 </LinearLayout>
 
@@ -92,8 +86,6 @@
                         android:clickable="true"
                         android:contentDescription="@string/go_to_pharmacy"
                         android:focusable="true"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/favoriteIcon"
                         app:srcCompat="@drawable/baseline_location_on_24" />
 
                 </LinearLayout>
@@ -106,9 +98,9 @@
                     android:paddingRight="10dp">
 
                     <ImageButton
+                        android:id="@+id/rateButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/rateButton"
                         android:layout_gravity="center"
                         android:layout_marginTop="20dp"
                         android:background="@drawable/baseline_add_comment_24"
@@ -116,9 +108,9 @@
                         android:focusable="true" />
 
                     <ImageButton
+                        android:id="@+id/reportButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/reportButton"
                         android:layout_gravity="center"
                         android:background="@drawable/report_flag"
                         android:contentDescription="Report pharmacy"
@@ -180,8 +172,8 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="55dp"
-                android:layout_marginEnd="55dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
                 android:layout_marginBottom="8dp">
 
                 <Button

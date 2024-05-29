@@ -160,10 +160,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                     val geocoder = Geocoder(this@MapsActivity)
                     try {
                         val addressList = geocoder.getFromLocationName(name, 1)
-                        if (addressList!=null) {
+                        if (!addressList.isNullOrEmpty()) {
                             val address = addressList[0]
                             val latLng = LatLng(address.latitude, address.longitude)
                             zoomOnMap(latLng)
+                        } else {
+                            showToast("There are no pharmacies or places with the given name")
                         }
                     } catch (e : IOException){
                         Log.e(TAG, e.toString())
@@ -310,9 +312,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                     zoomOnMap(location)
                     pharmacyExists = true
                 }
-                override fun onFailure() {
-                    showToast("There are no pharmacies with the given name")
-                }
+                override fun onFailure() {}
             })
         } else {
             pharmacyExists = true
