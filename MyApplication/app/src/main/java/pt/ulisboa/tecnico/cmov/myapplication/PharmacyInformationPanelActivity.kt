@@ -33,7 +33,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private var db: FirebaseFirestore = Firebase.firestore
     private var pharmacyName: String? = null
     private var pharmacyAddress: String? = null
-    private lateinit var pharmacy: PharmacyMetaData
     private var pharmacyLatLng: LatLng? = null
     private lateinit var medicineStock: MutableMap<MedicineMetaData, Int>
     private lateinit var auth: FirebaseAuth
@@ -60,6 +59,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         createGoToPharmacy()
 
         createManageStock()
+        createSharePharmacy()
 
         auth = Firebase.auth
         if (auth.currentUser != null) {
@@ -154,7 +154,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
 
     private fun getDataFromIntent() {
         Log.d(TAG, "here")
-        pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
+        val pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
         val name : TextView = findViewById(R.id.pharmacyName)
         val address : TextView = findViewById(R.id.pharmacyLocation)
         val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
@@ -231,6 +231,21 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             val intent = Intent(this, ScanBarcodeActivity::class.java)
             intent.putExtra("pharmacyName", pharmacyName)
             this.startActivity(intent)
+        }
+    }
+
+    private fun createSharePharmacy(){
+        val sharePharmacy: ImageButton = findViewById(R.id.sharePharmacy)
+        sharePharmacy.setOnClickListener {
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT,
+                    "Hey there! Check out the pharmacy I found!\n" +
+                            "Name:$pharmacyName\n" +
+                            "Address:$pharmacyAddress\n")
+                type = "text/plain"
+            }
+            startActivity(Intent.createChooser(shareIntent, "Share via"))
         }
     }
 
