@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="96dp"
         android:background="@drawable/search_bar_background"
-        app:layout_constraintTop_toTopOf="parent"></FrameLayout>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.SearchView
         android:id="@+id/search_medicine"

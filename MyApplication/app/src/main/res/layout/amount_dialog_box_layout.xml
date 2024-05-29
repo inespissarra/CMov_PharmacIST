@@ -7,7 +7,7 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Enter the amount"
+        android:hint="@string/enter_the_amount"
         android:id="@+id/amount_editText"
         android:textSize="16sp"
         android:layout_marginHorizontal="20dp" />

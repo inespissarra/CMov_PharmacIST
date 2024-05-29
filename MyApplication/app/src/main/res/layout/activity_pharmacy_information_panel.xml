@@ -47,7 +47,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="32dp"
                         android:layout_marginTop="8dp"
-                        android:text="TextView"
+                        android:text="@string/pharmacy_name"
                         android:textSize="32sp"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
@@ -74,7 +74,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="32dp"
                         android:layout_marginTop="8dp"
-                        android:text="Address"
+                        android:text="@string/address"
                         android:textSize="18sp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/ratingBar" />
@@ -95,7 +95,7 @@
                         android:layout_marginTop="20dp"
                         android:layout_marginBottom="15dp"
                         android:clickable="true"
-                        android:contentDescription="Favorite"
+                        android:contentDescription="@string/favorite"
                         android:focusable="true"
                         android:background="@drawable/favorite_icon_selector" />
 

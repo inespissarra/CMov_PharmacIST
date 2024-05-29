@@ -39,7 +39,7 @@
             android:layout_toStartOf="@+id/buyButton"
             android:layout_toEndOf="@id/recMedicineImage"
             android:gravity="center_vertical"
-            android:text="Name"
+            android:text="@string/medicine_name"
             android:textColor="@color/green_4"
             android:textSize="18sp" />
 
@@ -53,7 +53,7 @@
             android:layout_toEndOf="@+id/recMedicineImage"
             android:textColor="@color/green_4"
             android:textSize="12sp"
-            android:text="Stock: " />
+            android:text="@string/stock" />
 
         <TextView
             android:id="@+id/stockAmount"
@@ -61,8 +61,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/recMedicineName"
             android:layout_marginTop="-4dp"
+            android:layout_marginStart="2dp"
             android:layout_toEndOf="@id/stockString"
-            android:text="0"
+            android:text="@string/zero"
             android:textColor="@color/green_4"
             android:textSize="12sp" />
 
@@ -84,6 +85,7 @@
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="32dp"
             android:layout_centerVertical="true"
+            android:contentDescription="@string/pharmacy_image"
             android:id="@+id/buyButton"
             android:src="@drawable/baseline_add_shopping_cart_24"
             android:background="@color/zxing_transparent"/>
