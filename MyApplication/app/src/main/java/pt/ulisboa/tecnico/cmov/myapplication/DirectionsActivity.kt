@@ -82,7 +82,7 @@ class DirectionsActivity : AppCompatActivity(), OnMapReadyCallback{
                     requestDirections(pharmacyLocation!!)
                 }
                 override fun onFailure() {
-                    showToast("There was a problem verifying your location. Verify that permissions are active.")
+                    showToast(R.string.error_verifying_location)
                 }
             })
         }
@@ -252,7 +252,7 @@ class DirectionsActivity : AppCompatActivity(), OnMapReadyCallback{
         val points: String
     )
 
-    private fun showToast(message: String){
+    private fun showToast(message: Int){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

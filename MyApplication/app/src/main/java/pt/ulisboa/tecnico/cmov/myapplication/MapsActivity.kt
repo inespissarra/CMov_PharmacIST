@@ -13,7 +13,6 @@ import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -25,9 +24,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -73,8 +70,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         Places.initialize(applicationContext, getString(R.string.google_map_api_key))
 
-        //createSearchBar()
-        createSearchBar2()
+        createSearchBar()
 
         db = Firebase.firestore
         pharmacyRepository = PharmacyRepository(this)
@@ -133,24 +129,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     }
 
     private fun createSearchBar() {
-        autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
-                as AutocompleteSupportFragment
-        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
-        autocompleteFragment.setOnPlaceSelectedListener(object: PlaceSelectionListener {
-            override fun onError(p0: Status) {
-                if (!p0.isCanceled) {
-                    showToast("Some error in search") }
-            }
-
-            override fun onPlaceSelected(place: Place) {
-                val latLng = place.latLng!!
-                mMap.addMarker(MarkerOptions().position(latLng).title("$latLng"))
-                zoomOnMap(latLng)
-            }
-        })
-    }
-
-    private fun createSearchBar2() {
         mapSearchView = findViewById(R.id.mapSearchView) as SearchView
 
         mapSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -165,7 +143,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                             val latLng = LatLng(address.latitude, address.longitude)
                             zoomOnMap(latLng)
                         } else {
-                            showToast("There are no pharmacies or places with the given name")
+                            showToast(R.string.no_pharmacies_and_places)
                         }
                     } catch (e : IOException){
                         Log.e(TAG, e.toString())
@@ -292,7 +270,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                     markPlaces(pharmacies)
                 }
                 override fun onFailure() {
-                    showToast("There are no pharmacies in this area")
+                    showToast(R.string.no_pharmacies_in_area)
                 }
             })
         } else{
@@ -345,9 +323,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                     }
                 } else callback.onFailure()
             }
-            .addOnFailureListener { exception ->
-                showToast(exception.toString())
-            }
+            .addOnFailureListener {}
         if (pharmacy!=null){
             findNearbyPharmaciesFirebase(pharmacy!!.latitude!!, pharmacy!!.longitude!!, object : NearbyPharmaciesFirebaseCallback {
                 override fun onSuccess() {}
@@ -419,7 +395,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         markers.clear()
     }
 
-    private fun showToast(message: String){
+    private fun showToast(message: Int){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

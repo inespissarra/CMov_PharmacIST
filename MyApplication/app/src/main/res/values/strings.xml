@@ -60,4 +60,36 @@
     <string name="hyphen" translatable="false">-</string>
     <string name="zero_meters" translatable="false">0 m</string>
     <string name="pharmacy_location">PharmacyLocation</string>
+    <string name="rate_pharmacy">Rate pharmacy</string>
+    <string name="report_pharmacy">Report pharmacy</string>
+    <string name="rating">Rating</string>
+    <string name="fill_mandatory_fields">Must fill all mandatory fields</string>
+    <string name="medicine_registered">Medicine registered successfully</string>
+    <string name="error_registering_medicine">Error registering medicine</string>
+    <string name="canceled">Canceled...!</string>
+    <string name="pharmacy_registered">Pharmacy registered successfully</string>
+    <string name="error_registering_pharmacy">Error registering pharmacy</string>
+    <string name="error_uploading_image">Error uploading the image</string>
+    <string name="camera_storage_permissions">Camera and Storage permissions are required</string>
+    <string name="storage_permissions">Storage permission are required</string>
+    <string name="not_enough_stock">There is not enough stock</string>
+    <string name="medicine_bought_successfully">Medicine bought successfully</string>
+    <string name="error_buying_medicine">Error buying medicine</string>
+    <string name="error_verifying_location">Error verifying location. Verify that permissions are active.</string>
+    <string name="login_successful">Login Successful</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="no_pharmacies_in_area">There are no pharmacies in this area</string>
+    <string name="no_pharmacies_and_places">There are no pharmacies or places with the given name</string>
+    <string name="error_loading_data">Error loading data</string>
+    <string name="no_medicine_found">No medicine found</string>
+    <string name="not_logged_in">Please do the Login first</string>
+    <string name="something_went_wrong">Something went wrong :( Please try again later</string>
+    <string name="select_location">Please select a location</string>
+    <string name="barcode_detection_failed">Barcode detection failed. Please try again</string>
+    <string name="invalid_image">Invalid image</string>
+    <string name="username_changed">Username changed successfully</string>
+    <string name="share_message_init">Hey there! Check out the pharmacy I found!\n</string>
+    <string name="share_message_name">Name: </string>
+    <string name="share_message_address">Address: </string>
+
 </resources>

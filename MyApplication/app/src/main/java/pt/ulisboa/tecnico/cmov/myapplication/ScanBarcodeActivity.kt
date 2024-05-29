@@ -24,7 +24,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -80,17 +79,17 @@ class ScanBarcodeActivity : AppCompatActivity() {
                 barcodeScanner.process(inputImage)
                     .addOnSuccessListener { barcodes ->
                         if (barcodes.isEmpty()){
-                           showToast("Barcode detection failed. Please resubmit an image.")
+                           showToast(R.string.barcode_detection_failed)
                         } else processBarcode(barcodes.first().rawValue!!)
                     }
                     .addOnFailureListener { e ->
                         Log.e(TAG, "Barcode detection failed: $e")
-                        showToast("Barcode detection failed. Please resubmit an image.")
+                        showToast(R.string.barcode_detection_failed)
                     }
                 return
             }
         }
-        showToast("Invalid image")
+        showToast(R.string.invalid_image)
     }
 
     private fun processBarcode(barcode: String) {
@@ -126,7 +125,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
+                showToast(R.string.something_went_wrong)
             }
     }
 
@@ -151,7 +150,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
         ScanContract()
     ) { result: ScanIntentResult ->
         if (result.contents == null) {
-            Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
+            showToast(R.string.canceled)
         } else {
             processBarcode(result.contents)
         }
@@ -176,7 +175,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
             processImageForBarcode(imageUri)
         }
         else {
-            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+            showToast(R.string.canceled)
         }
     }
 
@@ -224,12 +223,12 @@ class ScanBarcodeActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                     pickImageCamera()
-                else showToast("Camera permissions are required")
+                else showToast(R.string.camera_storage_permissions)
             }
             STORAGE_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                     pickImageGallery()
-                else showToast("Storage permissions are required")
+                else showToast(R.string.storage_permissions)
             }
         }
     }
@@ -274,7 +273,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
             }
     }
 
-    private fun showToast(message: String){
+    private fun showToast(message: Int){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

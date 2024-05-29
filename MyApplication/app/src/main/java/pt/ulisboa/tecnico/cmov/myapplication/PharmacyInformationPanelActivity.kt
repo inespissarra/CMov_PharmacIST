@@ -110,14 +110,13 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 }
             }
             else {
-                Toast.makeText(this, "You're not logged in", Toast.LENGTH_SHORT).show()
+                showToast(R.string.not_logged_in)
             }
         }
     }
 
     private fun addToFavorite() {
         val data = hashMapOf("name" to pharmacyName)
-        // TODO: make this document an attribute of the class
         db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
             .add(data)
             .addOnSuccessListener {
@@ -127,7 +126,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             }
             .addOnFailureListener { e ->
                 Log.d(TAG, "addToFavorite: failed to add to favorite due to ${e.message}")
-                Toast.makeText(this, "Failed to add to favorite due to ${e.message}", Toast.LENGTH_SHORT).show()
+                showToast(R.string.something_went_wrong)
             }
     }
 
@@ -144,12 +143,12 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 }
                 else {
                     Log.d(TAG, "removeFromFavorite: No pharmacy matched")
-                    Toast.makeText(this, "No pharmacy matched", Toast.LENGTH_SHORT).show()
+                    showToast(R.string.something_went_wrong)
                 }
             }
             .addOnFailureListener {e ->
                 Log.d(TAG, "removeFromFavorite: Failed to remove favorite")
-                Toast.makeText(this, "Failed to remove favorite due to ${e.message}", Toast.LENGTH_SHORT).show()
+                showToast(R.string.something_went_wrong)
             }
     }
 
@@ -312,12 +311,12 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private fun createSharePharmacy(){
         val sharePharmacy: ImageButton = findViewById(R.id.sharePharmacy)
         sharePharmacy.setOnClickListener {
+            var shareMessage = getString(R.string.share_message_init)
+            shareMessage += getString(R.string.share_message_name) + "$pharmacyName\n"
+            shareMessage += getString(R.string.share_message_address) + "$pharmacyAddress\n"
             val shareIntent = Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT,
-                    "Hey there! Check out the pharmacy I found!\n" +
-                            "Name:$pharmacyName\n" +
-                            "Address:$pharmacyAddress\n")
+                putExtra(Intent.EXTRA_TEXT, shareMessage)
                 type = "text/plain"
             }
             startActivity(Intent.createChooser(shareIntent, "Share via"))
@@ -370,7 +369,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 stockListView.adapter = adapter
             }
             .addOnFailureListener {
-                Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
+                showToast(R.string.something_went_wrong)
             }
     }
 
@@ -406,5 +405,9 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             }
         }
         return 0
+    }
+
+    private fun showToast(message: Int){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

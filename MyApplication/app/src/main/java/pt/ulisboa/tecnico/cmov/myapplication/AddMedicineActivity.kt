@@ -88,7 +88,7 @@ class AddMedicineActivity : AppCompatActivity() {
             addNewMedicineToStock(medicineName, purpose, amount)
         }
         else
-            showToast("Must fill all mandatory fields")
+            showToast(R.string.fill_mandatory_fields)
     }
 
     private fun addNewMedicine(medicineName: String, purpose: String) {
@@ -102,12 +102,12 @@ class AddMedicineActivity : AppCompatActivity() {
             .set(medicine)
             .addOnSuccessListener {
                 Log.d(TAG, "Medicine registered successfully")
-                showToast("Medicine registered successfully")
+                showToast(R.string.medicine_registered)
                 finish()
             }
             .addOnFailureListener {
                 Log.e(TAG, "Error registering medicine")
-                showToast("Error registering medicine")
+                showToast(R.string.error_registering_medicine)
             }
     }
 
@@ -123,12 +123,12 @@ class AddMedicineActivity : AppCompatActivity() {
             .set(stock)
             .addOnSuccessListener {
                 Log.d(TAG, "Medicine registered successfully")
-                showToast("Medicine registered successfully")
+                showToast(R.string.medicine_registered)
                 finish()
             }
             .addOnFailureListener {
                 Log.e(TAG, "Error registering medicine")
-                showToast("Error registering medicine")
+                showToast(R.string.error_registering_medicine)
             }
     }
 
@@ -156,7 +156,7 @@ class AddMedicineActivity : AppCompatActivity() {
             imageIv.setImageURI(imageUri)
         }
         else{
-            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+            showToast(R.string.canceled)
         }
     }
 
@@ -179,7 +179,7 @@ class AddMedicineActivity : AppCompatActivity() {
             imageIv.setImageURI(imageUri)
         }
         else {
-            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+            showToast(R.string.canceled)
         }
     }
 
@@ -219,7 +219,7 @@ class AddMedicineActivity : AppCompatActivity() {
         return checkStoragePermissions()
     }
 
-    private fun showToast(message: String){
+    private fun showToast(message: Int){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

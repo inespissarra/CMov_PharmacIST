@@ -79,7 +79,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 setResult(Activity.RESULT_OK, intent)
                 finish()
             } else{
-                Toast.makeText(this, "Please select a location", Toast.LENGTH_SHORT).show()
+                showToast(R.string.select_location)
             }
         }
     }
@@ -104,7 +104,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
         autocompleteFragment.setOnPlaceSelectedListener(object: PlaceSelectionListener {
             override fun onError(p0: Status) {
-                Toast.makeText(this@SelectLocationActivity, "Some error in search", Toast.LENGTH_SHORT).show()
+                showToast(R.string.something_went_wrong)
             }
 
             override fun onPlaceSelected(place: Place) {
@@ -171,5 +171,9 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)))!!
         val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(selectedLocation, 18f)
         mMap.animateCamera(newLatLngZoom)
+    }
+
+    private fun showToast(message: Int){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

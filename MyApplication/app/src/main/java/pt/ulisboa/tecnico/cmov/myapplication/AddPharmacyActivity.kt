@@ -119,11 +119,11 @@ class AddPharmacyActivity : AppCompatActivity() {
             val lng = data.getDoubleExtra("longitude", Double.MIN_VALUE)
             pharmacyLocation = LatLng(lat, lng)
             val name  = data.getStringExtra("name")
-            pharmacyLocationName.setText("Location: $name")
+            pharmacyLocationName.setText("$name")
             locationSelected = 1
         }
         else{
-            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+            showToast(R.string.canceled)
         }
     }
 
@@ -148,17 +148,17 @@ class AddPharmacyActivity : AppCompatActivity() {
                     )
                     db.collection("pharmacies").document(name)
                         .set(pharmacy)
-                        .addOnSuccessListener { showToast("Successfully registered pharmacy") }
-                        .addOnFailureListener { e -> showToast("Something went wrong :( " + e) }
+                        .addOnSuccessListener { showToast(R.string.pharmacy_registered) }
+                        .addOnFailureListener { e -> showToast(R.string.error_registering_pharmacy) }
                     finish()
                 }
                 override fun onFailure(exception: Exception) {
-                    showToast("Something went wrong uploading the image")
+                    showToast(R.string.error_uploading_image)
                 }
             })
         }
         else{
-            showToast("Please fill in all fields with (*)")
+            showToast(R.string.fill_mandatory_fields)
         }
     }
 
@@ -174,7 +174,6 @@ class AddPharmacyActivity : AppCompatActivity() {
             imageRef.downloadUrl.addOnSuccessListener { uri ->
                 val downloadUrl = uri.toString()
                 callback.onSuccess(downloadUrl)
-                Log.d("here", "HERE${downloadUrl.toString()}")
             }.addOnFailureListener { exception ->
                 // Handle failed download URL retrieval
                 callback.onFailure(exception)
@@ -215,7 +214,7 @@ class AddPharmacyActivity : AppCompatActivity() {
             pharmacyPhotoName.setText(" Name: $name")
         }
         else{
-            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+            showToast(R.string.canceled)
         }
     }
 
@@ -240,7 +239,7 @@ class AddPharmacyActivity : AppCompatActivity() {
             pharmacyPhotoName.setText(" Name: $name")
         }
         else{
-            Toast.makeText(this, "Canceled...!", Toast.LENGTH_SHORT).show()
+            showToast(R.string.canceled)
         }
     }
 
@@ -295,7 +294,7 @@ class AddPharmacyActivity : AppCompatActivity() {
                        pickImageCamera()
                    }
                    else{
-                       showToast("Camera and Storage permissions are required")
+                       showToast(R.string.camera_storage_permissions)
                    }
                }
            }
@@ -306,14 +305,14 @@ class AddPharmacyActivity : AppCompatActivity() {
                        pickImageGallery()
                    }
                    else{
-                       showToast("Storage permission are required")
+                       showToast(R.string.storage_permissions)
                    }
                }
            }
        }
    }
 
-   private fun showToast(message: String){
+   private fun showToast(message: Int){
        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
    }
 }

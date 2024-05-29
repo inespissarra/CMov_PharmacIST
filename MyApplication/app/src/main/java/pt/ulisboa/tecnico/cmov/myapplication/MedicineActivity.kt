@@ -130,7 +130,7 @@ class MedicineActivity : AppCompatActivity() {
                     Log.d(TAG, "onRequestPermissionsResult - User granted permission")
                     loadData()
                 }
-                else Toast.makeText(this, "The app requires location for some features", Toast.LENGTH_SHORT).show()
+                else showToast(R.string.error_verifying_location)
             }
         }
     }
@@ -227,7 +227,7 @@ class MedicineActivity : AppCompatActivity() {
             isLoading = false
             Log.d(TAG, "Finished loading data from DB, medicineList=$medicineList, filteredList=$filteredList")
         }.addOnFailureListener {
-            Toast.makeText(this, "Error loading data from DB", Toast.LENGTH_SHORT).show()
+            showToast(R.string.error_loading_data)
         }
     }
 
@@ -291,14 +291,14 @@ class MedicineActivity : AppCompatActivity() {
                             adapter.notifyDataSetChanged()
                         }.
                         addOnFailureListener {
-                            Toast.makeText(this, "Error querying DB", Toast.LENGTH_SHORT).show()
+                            showToast(R.string.error_loading_data)
                         }
             }
             else {
                 adapter.notifyDataSetChanged()
             }
             if (filteredList.isEmpty() && new) {
-                Toast.makeText(this, "No medicine found", Toast.LENGTH_SHORT).show()
+                showToast(R.string.no_medicine_found)
             }
         } else {
             inSearch = false
@@ -358,5 +358,9 @@ class MedicineActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    private fun showToast(message: Int){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

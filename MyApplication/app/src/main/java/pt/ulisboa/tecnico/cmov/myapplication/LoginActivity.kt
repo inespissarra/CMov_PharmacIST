@@ -48,7 +48,7 @@ class LoginActivity : AppCompatActivity() {
                 loginWithEmail(email, password)
             }
             else {
-                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                showToast(R.string.fill_mandatory_fields)
             }
         }
 
@@ -67,14 +67,18 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
+                    showToast(R.string.login_successful)
                     val intent = Intent(this, MapsActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else {
-                    Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                    showToast(R.string.authentication_failed)
                 }
             }
 
+    }
+
+    private fun showToast(message: Int){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

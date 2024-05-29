@@ -68,7 +68,7 @@ class BuyMedicineActivity : AppCompatActivity() {
         if (amountEditText.text.toString().takeIf { it.isNotBlank() } != null) {
             val insertedStock: Int = amountEditText.text.toString().toInt()
             if (insertedStock > stock) {
-                showToast("There is not enough stock")
+                showToast(R.string.not_enough_stock)
             }
             makePurchase(medicine.name!!, insertedStock)
         }
@@ -80,17 +80,17 @@ class BuyMedicineActivity : AppCompatActivity() {
             .update("amount", FieldValue.increment((-amount).toLong()))
             .addOnSuccessListener {
                 Log.d(TAG, "Medicine bought successfully")
-                showToast("Medicine bought successfully")
+                showToast(R.string.medicine_bought_successfully)
                 finish()
             }
             .addOnFailureListener {
                 Log.e(TAG, "Error buying medicine")
-                showToast("Error buying medicine")
+                showToast(R.string.error_buying_medicine)
 
             }
     }
 
-    private fun showToast(message: String){
+    private fun showToast(message: Int){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
