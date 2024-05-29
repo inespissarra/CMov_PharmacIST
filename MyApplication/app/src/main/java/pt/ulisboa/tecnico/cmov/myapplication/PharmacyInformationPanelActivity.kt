@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.myapplication
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -14,15 +15,25 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.SetOptions
 
 class PharmacyInformationPanelActivity: AppCompatActivity() {
 
@@ -35,6 +46,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private var pharmacyAddress: String? = null
     private var pharmacyLatLng: LatLng? = null
     private lateinit var medicineStock: MutableMap<MedicineMetaData, Int>
+    private lateinit var ratingList: List<Int>
     private lateinit var auth: FirebaseAuth
     private var isInUsersFavorite = false
     private lateinit var adapter: ListMedicineAdapter
@@ -53,13 +65,19 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
 
         /*createPharmacyImage()
         createPharmacyAddress()*/
-        createRatingBar()
+        updateRatingList()
+        Log.d(TAG, "list after updated: " + ratingList.joinToString(", "))
+        Log.d(TAG, "list only has zero: " + ratingList.all { it == 0 })
+        /*if (! ratingList.all { it == 0 })
+            createRatingHistogram()*/
+        ratingButtonEvent()
+
+        createSharePharmacy()
 
         // createFavoriteStar()
         createGoToPharmacy()
 
         createManageStock()
-        createSharePharmacy()
 
         auth = Firebase.auth
         if (auth.currentUser != null) {
@@ -67,6 +85,17 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             checkIsFavorite()
         }
 
+        favoriteButtonEvent()
+
+        Log.d(TAG, "onCreate finished")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        createStockList()
+    }
+
+    private fun favoriteButtonEvent() {
         // handle click, add/remove favorite
         val favoriteButton : ImageButton = findViewById(R.id.favoriteIcon)
         favoriteButton.setOnClickListener {
@@ -84,17 +113,11 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 Toast.makeText(this, "You're not logged in", Toast.LENGTH_SHORT).show()
             }
         }
-
-        Log.d(TAG, "onCreate finished")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        createStockList()
     }
 
     private fun addToFavorite() {
         val data = hashMapOf("name" to pharmacyName)
+        // TODO: make this document an attribute of the class
         db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
             .add(data)
             .addOnSuccessListener {
@@ -168,12 +191,138 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
     }
 
-    private fun createRatingBar() {
-        val ratingBar: RatingBar = findViewById(R.id.ratingBar)
-        // TODO: Part 2 - Update with average of ratings
-        ratingBar.rating = 3.5F
+    private fun createRatingHistogram() {
+        val barChart = findViewById<BarChart>(R.id.barChart)
+
+        // Calculate the frequency of each rating value
+        val ratingCounts = IntArray(6)
+        for (rating in ratingList) {
+            ratingCounts[rating]++
+        }
+
+        Log.d(TAG, "rating counts: " + ratingCounts.joinToString(", "))
+
+        // Prepare the data for the chart
+        val entries = ArrayList<BarEntry>()
+        for (i in 1..5) {
+            entries.add(BarEntry(i.toFloat(), ratingCounts[i].toFloat()))
+        }
+
+        val barDataSet = BarDataSet(entries, "Ratings")
+        barDataSet.color = ContextCompat.getColor(this, R.color.green_3)
+        barDataSet.setDrawValues(false)
+
+        barChart.data = BarData(barDataSet)
+        barChart.setFitBars(true)
+        barChart.description.isEnabled = false
+        barChart.setPinchZoom(false)
+        barChart.setDrawBarShadow(false)
+        barChart.setDrawGridBackground(false)
+
+        val xAxis = barChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
+        xAxis.granularity = 1f
+        xAxis.isGranularityEnabled = true
+        // xAxis.valueFormatter = IndexAxisValueFormatter(arrayListOf())
+
+        val maxValue = ratingCounts.maxOrNull() ?: 0
+
+        // Set the axis minimum and maximum values
+        val leftAxis: YAxis = barChart.axisLeft
+        leftAxis.axisMinimum = 0f
+        leftAxis.axisMaximum = (maxValue + 1).toFloat()  // Adding 1 to leave some space at the top
+
+        // Set the scale (granularity) based on the maximum value
+        if (maxValue < 10) {
+            leftAxis.granularity = 1f
+            leftAxis.isGranularityEnabled = true
+        }
+
+        barChart.axisRight.isEnabled = false  // Disable right Y-axis
+
+        barChart.axisLeft.setDrawGridLines(false)
+        barChart.legend.isEnabled = true
+
+        barChart.invalidate()
+
     }
 
+    private fun ratingButtonEvent() {
+        val rateButton: ImageButton = findViewById(R.id.rateButton)
+        rateButton.setOnClickListener {
+            if (auth.currentUser != null)
+                showRatingDialog()
+            else
+            // TODO: display this error on the screen
+                Log.e(TAG, "no user logged")
+        }
+    }
+
+    private fun showRatingDialog() {
+        // Inflate the dialog layout
+        val dialogView = layoutInflater.inflate(R.layout.rating_dialog, null)
+        val ratingBar = dialogView.findViewById<RatingBar>(R.id.ratingBar)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Rate the pharmacy")
+            .setView(dialogView)
+            .setPositiveButton("OK") { _, _ ->
+                val rating = mapOf("rate" to ratingBar.rating)
+                Log.d(TAG, "Rating: $rating")
+
+                // TODO: make this document an attribute of the class
+                db.collection("pharmacies").document(pharmacyName!!).collection("ratings")
+                    .document(auth.currentUser!!.uid)
+                    .set(rating, SetOptions.merge())
+                    .addOnSuccessListener {
+                        Log.d(TAG, "rating added/updated successfully")
+                        updateRatingList()
+                    }
+                    .addOnFailureListener {
+                        Log.e(TAG, "rating added/updated failed")
+                    }
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        dialog.show()
+    }
+
+    private fun updateRatingList() {
+        val list = mutableListOf<Int>()
+        // TODO: maybe instead of accessing database, use a mutable map for ranking list (user -> rate), and thus update the map while update the rate
+        db.collection("pharmacies").document(pharmacyName!!).collection("ratings").get()
+            .addOnSuccessListener { documents ->
+                for (document in documents.documents) {
+                    list.add(document.getLong("rate")!!.toInt())
+                    Log.d(TAG, "updating list: " + list.joinToString(", "))
+                }
+                createRatingHistogram()
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Failed to get ratings")
+            }
+
+        ratingList = list
+    }
+
+    private fun createSharePharmacy(){
+        val sharePharmacy: ImageButton = findViewById(R.id.sharePharmacy)
+        sharePharmacy.setOnClickListener {
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT,
+                    "Hey there! Check out the pharmacy I found!\n" +
+                            "Name:$pharmacyName\n" +
+                            "Address:$pharmacyAddress\n")
+                type = "text/plain"
+            }
+            startActivity(Intent.createChooser(shareIntent, "Share via"))
+        }
+    }
 
     private fun createGoToPharmacy() {
         val goToPharmacy: ImageView = findViewById(R.id.gotoPharmacy)
@@ -231,21 +380,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             val intent = Intent(this, ScanBarcodeActivity::class.java)
             intent.putExtra("pharmacyName", pharmacyName)
             this.startActivity(intent)
-        }
-    }
-
-    private fun createSharePharmacy(){
-        val sharePharmacy: ImageButton = findViewById(R.id.sharePharmacy)
-        sharePharmacy.setOnClickListener {
-            val shareIntent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT,
-                    "Hey there! Check out the pharmacy I found!\n" +
-                            "Name:$pharmacyName\n" +
-                            "Address:$pharmacyAddress\n")
-                type = "text/plain"
-            }
-            startActivity(Intent.createChooser(shareIntent, "Share via"))
         }
     }
 

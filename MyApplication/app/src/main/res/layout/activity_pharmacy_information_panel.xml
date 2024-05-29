@@ -53,21 +53,6 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/pharmacyImage" />
 
-                    <RatingBar
-                        android:id="@+id/ratingBar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="32dp"
-                        android:layout_marginTop="8dp"
-                        android:isIndicator="true"
-                        android:progressBackgroundTint="@color/beige_3"
-
-                        android:progressTint="@color/quantum_yellow"
-                        android:rating="3.5"
-                        android:stepSize="0.5"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/pharmacyName" />
-
                     <TextView
                         android:id="@+id/pharmacyLocation"
                         android:layout_width="wrap_content"
@@ -85,7 +70,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_weight="1">
+                    android:layout_weight="0.8">
 
                     <ImageButton
                         android:id="@+id/favoriteIcon"
@@ -93,7 +78,6 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginTop="20dp"
-                        android:layout_marginBottom="15dp"
                         android:clickable="true"
                         android:contentDescription="favorite"
                         android:focusable="true"
@@ -104,8 +88,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_marginTop="15dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginTop="20dp"
                         android:clickable="true"
                         android:contentDescription="@string/go_to_pharmacy"
                         android:focusable="true"
@@ -115,6 +98,55 @@
 
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="0.8"
+                    android:paddingRight="10dp">
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/rateButton"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="20dp"
+                        android:background="@drawable/baseline_add_comment_24"
+                        android:contentDescription="Rate pharmacy"
+                        android:focusable="true" />
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/reportButton"
+                        android:layout_gravity="center"
+                        android:background="@drawable/report_flag"
+                        android:contentDescription="Report pharmacy"
+                        android:layout_marginTop="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/rateButton"
+                        android:focusable="true" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:padding="16dp"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Rating"
+                    android:textStyle="bold"
+                    android:textSize="18sp"/>
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/barChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
             </LinearLayout>
 
             <TextView

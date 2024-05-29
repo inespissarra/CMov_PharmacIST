@@ -7,7 +7,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-data class PharmacyMetaData(var name: String? = null, var latitude: Double? = null, var longitude: Double? = null, var picture: String? = null, var locationName: String? = null) : Parcelable {
+data class PharmacyMetaData(var name: String? = null, var latitude: Double? = null,
+                            var longitude: Double? = null, var picture: String? = null,
+                            var locationName: String? = null) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
         parcel.readValue(Double::class.java.classLoader) as Double?,

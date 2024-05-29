@@ -31,6 +31,7 @@
         <item name="itemTextColor">@color/green_4</item>
         <item name="titleTextColor">@color/brown_2</item>
         <item name="subtitleTextColor">@color/brown_1</item>
+        <item name="warningColor">@color/red_2</item>
 
     </style>
 

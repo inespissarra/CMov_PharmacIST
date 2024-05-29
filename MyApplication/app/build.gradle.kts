@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.play.services.mlkit.barcode.scanning)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -91,6 +92,9 @@ dependencies {
 
     implementation("androidx.sqlite:sqlite:2.1.0")
     implementation("androidx.sqlite:sqlite-framework:2.1.0")
+
+    // dependency to draw bar chart
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     // Declare the dependency for the Cloud Firestore library
     // When using the BoM, you don't specify versions in Firebase library dependencies

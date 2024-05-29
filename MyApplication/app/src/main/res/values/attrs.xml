@@ -18,4 +18,6 @@
     <attr name="itemTextColor" format="color"/>
     <attr name="titleTextColor" format="color"/>
     <attr name="subtitleTextColor" format="color"/>
+    <attr name="divisionLineColor" format="color"/>
+    <attr name="warningColor" format="color"/>
 </resources>
