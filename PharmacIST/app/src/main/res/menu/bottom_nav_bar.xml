@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="@string/map"
+        android:id="@+id/nav_map"
+        android:icon="@drawable/map"/>
+    <item android:title="@string/medicine"
+        android:id="@+id/nav_medicine"
+        android:icon="@drawable/medicine"/>
+    <item android:title="@string/profile"
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/profile"/>
+    <item
+        android:id="@+id/invisible"
+        android:visible="false"/>
+</menu>

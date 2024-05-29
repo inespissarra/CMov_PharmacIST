@@ -1,0 +1,37 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.PharmacIST" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/brown_1</item>
+        <item name="colorPrimaryVariant">@color/brown_2</item>
+        <item name="colorOnPrimary">@color/beige_1</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/green_4</item>
+        <item name="colorSecondaryVariant">@color/green_2</item>
+        <item name="colorOnSecondary">@color/beige_1</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/navigationBackgroundColor</item>
+        <!-- Customize your theme here. -->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="navigationBackgroundColor">@color/brown_1</item>
+        <item name="bottomIconColor">@color/beige_1</item>
+        <item name="bottomIconColor2">@color/beige_3</item>
+        <item name="applicationNameColor">@color/beige_2</item>
+        <item name="hintColor">@color/beige_3</item>
+        <item name="buttonColor">@color/green_3</item>
+        <item name="buttonTextColor">@color/beige_1</item>
+        <item name="button2Color">@color/brown_2</item>
+        <item name="button2TextColor">@color/beige_1</item>
+        <item name="iconBackgroundColor">@color/brown_2</item>
+        <item name="iconColor">@color/green_2</item>
+        <item name="textBoxBackgroundColor">@color/brown_0</item>
+        <item name="textBoxBorderColor">@color/beige_2</item>
+        <item name="pageBackgroundColor">@color/brown_3</item>
+        <item name="itemBackgroundColor">@color/brown_1</item>
+        <item name="itemTextColor">@color/green_1</item>
+        <item name="titleTextColor">@color/beige_2</item>
+        <item name="subtitleTextColor">@color/beige_3</item>
+        <item name="warningColor">@color/red_2</item>
+
+    </style>
+</resources>

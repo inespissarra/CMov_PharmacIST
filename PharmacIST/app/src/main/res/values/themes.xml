@@ -1,0 +1,47 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.PharmacIST" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/beige_2</item>
+        <item name="colorPrimaryVariant">@color/beige_1</item>
+        <item name="colorOnPrimary">@color/brown_2</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/green_1</item>
+        <item name="colorSecondaryVariant">@color/green_3</item>
+        <item name="colorOnSecondary">@color/brown_2</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/applicationNameColor</item>
+        <!-- Customize your theme here. -->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="navigationBackgroundColor">@color/beige_2</item>
+        <item name="bottomIconColor">@color/green_3</item>
+        <item name="bottomIconColor2">@color/green_2</item>
+        <item name="applicationNameColor">@color/brown_2</item>
+        <item name="hintColor">@color/green_2</item>
+        <item name="buttonColor">@color/green_3</item>
+        <item name="buttonTextColor">@color/beige_1</item>
+        <item name="button2Color">@color/beige_2</item>
+        <item name="button2TextColor">@color/brown_3</item>
+        <item name="iconBackgroundColor">@color/beige_2</item>
+        <item name="iconColor">@color/green_3</item>
+        <item name="textBoxBackgroundColor">@color/beige_1</item>
+        <item name="textBoxBorderColor">@color/green_3</item>
+        <item name="pageBackgroundColor">@color/beige_1</item>
+        <item name="itemBackgroundColor">@color/beige_3</item>
+        <item name="itemTextColor">@color/green_4</item>
+        <item name="titleTextColor">@color/brown_2</item>
+        <item name="subtitleTextColor">@color/brown_1</item>
+        <item name="warningColor">@color/red_2</item>
+
+    </style>
+
+    <style name="roundedImageViewRounded">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">10%</item>
+    </style>
+
+    <style name="SearchViewTheme" parent="Widget.AppCompat.Light.SearchView">
+        <item name="android:maxWidth">10000dp</item>
+        <item name="android:textColorHint">@color/green_1</item>
+    </style>
+</resources>

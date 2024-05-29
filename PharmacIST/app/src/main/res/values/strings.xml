@@ -1,0 +1,95 @@
+<resources>
+    <string name="app_name">PharmacIST</string>
+    <string name="application" translatable="false">PharmacIST</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="google_map_api_key" translatable="false">AIzaSyAUZHmeyoE6PxFAwRbvZRWdCWH4vCEAhiw</string>
+    <string name="map">Map</string>
+    <string name="medicine">Medicine</string>
+    <string name="profile">Profile</string>
+    <string name="image">Image</string>
+    <string name="register_a_new_pharmacy">Register a new pharmacy</string>
+    <string name="name_field">Name*</string>
+    <string name="address_field">Address*</string>
+    <string name="photo_field">Add photo*</string>
+    <string name="register">Register</string>
+    <string name="available_stock">Available Stock:</string>
+    <string name="favorite_star">Favorite star</string>
+    <string name="go_to_pharmacy">Go to pharmacy</string>
+    <string name="manage_stock">Manage stock</string>
+    <string name="stock_list">Stock list</string>
+    <string name="pharmacy_image">PharmacyImage</string>
+    <string name="buy">Buy</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="successful">SUCCESSFUL</string>
+    <string name="unsuccessful">UNSUCCESSFUL</string>
+    <string name="submit">Submit</string>
+    <string name="scan_again">Alternatively, you can scan again</string>
+    <string name="add">add</string>
+    <string name="register_a_new_medicine">Register a new medicine</string>
+    <string name="purpose_field">Purpose*</string>
+    <string name="amount_field">Amount*</string>
+    <string name="search_pharmacies_here">Search Pharmacies Here</string>
+    <string name="get_directions">Get Directions</string>
+    <string name="cancel">CANCEL</string>
+    <string name="select">SELECT</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="password">Password</string>
+    <string name="login" translatable="false">Login</string>
+    <string name="scan_now">Scan Now!</string>
+    <string name="gallery">Gallery</string>
+    <string name="username">User</string>
+    <string name="logout" translatable="false">LOG OUT</string>
+    <string name="updateUsername">Update Username</string>
+    <string name="medicine_name">MedicineName</string>
+    <string name="not_registered_yet"><![CDATA[Not registered yet? Sign up >]]></string>
+    <string name="login_as_guest"><![CDATA[Login as guest >]]></string>
+    <string name="notification">Notification</string>
+    <string name="available_in">Available in:</string>
+    <string name="pharmacy_name">PharmacyName</string>
+    <string name="address">Address</string>
+    <string name="favorite">Favorite</string>
+    <string name="result">Result:</string>
+    <string name="add_register">Add/Register</string>
+    <string name="already_registered_login"><![CDATA[Already registered? Login >]]></string>
+    <string name="enter_the_amount">Enter the amount</string>
+    <string name="loading">Loading…</string>
+    <string name="zero" translatable="false">0</string>
+    <string name="stock">Stock:</string>
+    <string name="pharmacy">Pharmacy</string>
+    <string name="hyphen" translatable="false">-</string>
+    <string name="zero_meters" translatable="false">0 m</string>
+    <string name="pharmacy_location">PharmacyLocation</string>
+    <string name="rate_pharmacy">Rate pharmacy</string>
+    <string name="report_pharmacy">Report pharmacy</string>
+    <string name="rating">Rating</string>
+    <string name="fill_mandatory_fields">Must fill all mandatory fields</string>
+    <string name="medicine_registered">Medicine registered successfully</string>
+    <string name="error_registering_medicine">Error registering medicine</string>
+    <string name="canceled">Canceled...!</string>
+    <string name="pharmacy_registered">Pharmacy registered successfully</string>
+    <string name="error_registering_pharmacy">Error registering pharmacy</string>
+    <string name="error_uploading_image">Error uploading the image</string>
+    <string name="camera_storage_permissions">Camera and Storage permissions are required</string>
+    <string name="storage_permissions">Storage permission are required</string>
+    <string name="not_enough_stock">There is not enough stock</string>
+    <string name="medicine_bought_successfully">Medicine bought successfully</string>
+    <string name="error_buying_medicine">Error buying medicine</string>
+    <string name="error_verifying_location">Error verifying location. Verify that permissions are active.</string>
+    <string name="login_successful">Login Successful</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="no_pharmacies_in_area">There are no pharmacies in this area</string>
+    <string name="no_pharmacies_and_places">There are no pharmacies or places with the given name</string>
+    <string name="error_loading_data">Error loading data</string>
+    <string name="no_medicine_found">No medicine found</string>
+    <string name="not_logged_in">Please do the Login first</string>
+    <string name="something_went_wrong">Something went wrong :( Please try again later</string>
+    <string name="select_location">Please select a location</string>
+    <string name="barcode_detection_failed">Barcode detection failed. Please try again</string>
+    <string name="invalid_image">Invalid image</string>
+    <string name="username_changed">Username changed successfully</string>
+    <string name="share_message_init">Hey there! Check out the pharmacy I found!\n</string>
+    <string name="share_message_name">Name: </string>
+    <string name="share_message_address">Address: </string>
+
+</resources>
