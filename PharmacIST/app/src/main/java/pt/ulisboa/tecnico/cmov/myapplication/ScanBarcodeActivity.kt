@@ -62,7 +62,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
             else requestStoragePermissions()
         }
 
-        pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
+        pharmacy = intent.getParcelableExtra("pharmacy")!!
         pharmacyName = pharmacy.name
 
         resultText = findViewById(R.id.resultIv)
