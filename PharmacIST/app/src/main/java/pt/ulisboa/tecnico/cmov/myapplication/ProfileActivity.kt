@@ -23,7 +23,7 @@ class ProfileActivity : AppCompatActivity() {
     private val user = Firebase.auth.currentUser
     private lateinit var name : String
     private lateinit var email : String
-    private lateinit var username: EditText
+    private lateinit var username: TextView
     private lateinit var logoutButton: Button
     private lateinit var updateUsernameButton: Button
     private lateinit var sharedPreferences: SharedPreferences
@@ -47,6 +47,11 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         logoutButton = findViewById(R.id.logoutButton)
+        if (user == null) {
+            logoutButton.text = getString(R.string.login_caps)
+            username.text = getString(R.string.user)
+        }
+
         logoutButton.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             val intent = Intent(this, LoginActivity::class.java)

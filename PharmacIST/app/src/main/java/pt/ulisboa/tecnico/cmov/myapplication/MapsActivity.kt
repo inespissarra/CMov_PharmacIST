@@ -246,16 +246,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     private fun getFavoritePharmacies() {
         favoritePharmaciesRepository.clearPharmacies()
-        db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
+        db.collection("users").document(auth.uid!!)
             .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty){
-                    for (data in documents.documents) {
-                        val pharmacy: String? = data.getString("name")
-                        if (pharmacy != null) {
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val favorites = document.get("favorite_pharmacies") as? List<String>
+                    if (favorites != null) {
+                        for (pharmacy in favorites) {
                             favoritePharmaciesRepository.insertOrUpdate(pharmacy)
                         }
                     }
+
                 }
             }
     }

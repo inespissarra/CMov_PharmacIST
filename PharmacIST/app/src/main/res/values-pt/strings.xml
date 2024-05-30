@@ -34,7 +34,8 @@
     <string name="password">Palavra-passe</string>
     <string name="scan_now">Scan Agora!</string>
     <string name="gallery">Galeria</string>
-    <string name="username">Utilizador</string>
+    <string name="username">Nome de utilizador</string>
+    <string name="user">Utilizador</string>
     <string name="updateUsername">Atualizar Nome de Utilizador</string>
     <string name="medicine_name">NomeMedicamento</string>
     <string name="not_registered_yet"><![CDATA[Não registado? Criar conta >]]></string>

@@ -38,9 +38,11 @@
     <string name="login" translatable="false">Login</string>
     <string name="scan_now">Scan Now!</string>
     <string name="gallery">Gallery</string>
-    <string name="username">User</string>
+    <string name="username">Username</string>
+    <string name="user">User</string>
     <string name="logout" translatable="false">LOG OUT</string>
-    <string name="updateUsername">Update Username</string>
+    <string name="login_caps" translatable="false">LOGIN</string>
+    <string name="updateUsername">Edit Username</string>
     <string name="medicine_name">MedicineName</string>
     <string name="not_registered_yet"><![CDATA[Not registered yet? Sign up >]]></string>
     <string name="login_as_guest"><![CDATA[Login as guest >]]></string>
