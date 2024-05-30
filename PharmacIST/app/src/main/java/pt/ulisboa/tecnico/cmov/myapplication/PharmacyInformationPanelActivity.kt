@@ -43,6 +43,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     }
 
     private var db: FirebaseFirestore = Firebase.firestore
+    private lateinit var pharmacy: PharmacyMetaData
     private var pharmacyName: String? = null
     private var pharmacyAddress: String? = null
     private var pharmacyLatLng: LatLng? = null
@@ -172,7 +173,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     @Suppress("DEPRECATION")
     private fun getDataFromIntent() {
         Log.d(TAG, "here")
-        val pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
+        pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
         val name : TextView = findViewById(R.id.pharmacyName)
         val address : TextView = findViewById(R.id.pharmacyLocation)
         val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
@@ -417,7 +418,9 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val manageStock: Button = findViewById(R.id.manageStock)
         manageStock.setOnClickListener {
             val intent = Intent(this, ScanBarcodeActivity::class.java)
-            intent.putExtra("pharmacy", intent.getParcelableExtra<PharmacyMetaData>("pharmacy"))
+            val isNull = pharmacy == null
+            Log.d(TAG, "Is pharmacy null? " + isNull.toString())
+            intent.putExtra("pharmacy", pharmacy)
             this.startActivity(intent)
         }
     }

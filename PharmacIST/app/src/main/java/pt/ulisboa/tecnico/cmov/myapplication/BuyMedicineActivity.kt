@@ -81,6 +81,18 @@ class BuyMedicineActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 Log.d(TAG, "Medicine bought successfully")
                 showToast(R.string.medicine_bought_successfully)
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Error buying medicine")
+                showToast(R.string.error_buying_medicine)
+
+            }
+        
+        db.collection("medicines").document(medicineName).collection("pharmacies").document(pharmacyName)
+            .update("stock", FieldValue.increment((-amount).toLong()))
+            .addOnSuccessListener {
+                Log.d(TAG, "Medicine bought successfully")
+                showToast(R.string.medicine_bought_successfully)
                 finish()
             }
             .addOnFailureListener {

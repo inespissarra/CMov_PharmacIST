@@ -122,7 +122,6 @@ class AddMedicineActivity : AppCompatActivity() {
         db.collection("medicines").document(medicineName).collection("pharmacies").document(pharmacy.name!!)
             .set(stock)
             .addOnSuccessListener {
-                finish()
             }
             .addOnFailureListener {
                 Log.e(TAG, "Error registering medicine")
