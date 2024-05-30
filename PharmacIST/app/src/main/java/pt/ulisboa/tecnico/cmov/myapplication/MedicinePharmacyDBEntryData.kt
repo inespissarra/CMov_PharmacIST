@@ -18,8 +18,8 @@ data class MedicinePharmacyDBEntryData(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeTypedObject(medicineMetaData, flags)
         writePharmacyMap(parcel, pharmacyMap)
-        //parcel.writeTypedObject(closestPharmacy, flags)
-        //parcel.writeValue(closestDistance)
+        parcel.writeTypedObject(closestPharmacy, flags)
+        parcel.writeValue(closestDistance)
     }
 
     override fun describeContents(): Int {

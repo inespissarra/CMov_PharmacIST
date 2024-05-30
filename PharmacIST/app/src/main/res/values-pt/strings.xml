@@ -52,7 +52,7 @@
     <string name="stock">Inventário:</string>
     <string name="pharmacy">Farmácia</string>
     <string name="pharmacy_location">LocalizaçãoFarmácia</string>
-    <string name="rate_pharmacy">Avalie a farmáciay</string>
+    <string name="rate_pharmacy">Avalie a farmácia</string>
     <string name="report_pharmacy">Reporte a farmácia</string>
     <string name="rating">Avaliações</string>
     <string name="fill_mandatory_fields">Por favor preencha todos os campos obrigatórios</string>
@@ -83,4 +83,9 @@
     <string name="share_message_init">Oi! Vê a farmácia que encontrei!</string>
     <string name="share_message_name">\nNome: </string>
     <string name="share_message_address">\Endereço: </string>
+    <string name="name_not_found">Nome não encontrado</string>
+    <string name="location_not_found">Localização não encontrada</string>
+    <string name="not_found_in_any_pharmacy">Não encontrado em nenhuma farmácia</string>
+    <string name="medicine_description">DesriçãoMedicamento</string>
+    <string name="description_not_found">Descrição não encontrada</string>
 </resources>

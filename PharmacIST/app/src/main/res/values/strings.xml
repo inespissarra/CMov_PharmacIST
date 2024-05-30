@@ -91,5 +91,11 @@
     <string name="share_message_init">Hey there! Check out the pharmacy I found!\n</string>
     <string name="share_message_name">Name: </string>
     <string name="share_message_address">Address: </string>
+    <string name="name_not_found">Name not found</string>
+    <string name="location_not_found">Location not found</string>
+    <string name="distance" translatable="false">%1$s m</string>
+    <string name="not_found_in_any_pharmacy">Not found in any pharmacy</string>
+    <string name="medicine_description">MedicineDescription</string>
+    <string name="description_not_found">Description not found</string>
 
 </resources>

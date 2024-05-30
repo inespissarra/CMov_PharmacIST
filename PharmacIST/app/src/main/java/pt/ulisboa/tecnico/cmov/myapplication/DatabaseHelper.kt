@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 3
         const val DATABASE_NAME = "cache.db"
 
         const val TABLE_PHARMACY = "pharmacy"
@@ -19,8 +19,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val TABLE_MEDICINE = "medicine"
         const val COLUMN_MEDICINE_NAME = "name"
         const val COLUMN_MEDICINE_IMAGE = "image"
-        const val COLUMN_MEDICINE_STOCK = "stock"
-        const val COLUMN_MEDICINE_PHARMACY = "pharmacy"
+        const val COLUMN_MEDICINE_DESCRIPTION = "description"
+        const val COLUMN_MEDICINE_BARCODE = "barcode"
 
         const val TABLE_FAVORITE_PHARMACY = "favoritePharmacy"
         const val COLUMN_FAVORITE_PHARMACY_NAME = "name"
@@ -40,8 +40,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             CREATE TABLE $TABLE_MEDICINE (
                 $COLUMN_MEDICINE_NAME TEXT PRIMARY KEY,
                 $COLUMN_MEDICINE_IMAGE TEXT,
-                $COLUMN_MEDICINE_STOCK INTEGER,
-                $COLUMN_MEDICINE_PHARMACY TEXT
+                $COLUMN_MEDICINE_DESCRIPTION TEXT,
+                $COLUMN_MEDICINE_BARCODE TEXT
             )
         """
         val createFavoritePharmacyTable = """

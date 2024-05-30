@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import java.util.Locale
 
 class MedicineAdapter(private val context: Context, private var dataList: ArrayList<MedicinePharmacyDBEntryData>)
     : RecyclerView.Adapter<MedicineAdapter.MedicineViewHolder>() {
@@ -43,19 +44,20 @@ class MedicineAdapter(private val context: Context, private var dataList: ArrayL
         if (medicine.medicineMetaData?.name != null) {
             holder.recName.text = medicine.medicineMetaData!!.name?.capitalizeFirstLetter()
         } else {
-            holder.recName.text = "Name not found"
+            holder.recName.text = context.getString(R.string.name_not_found)
         }
 
         if (medicine.closestPharmacy != null) {
             holder.pharmacyName.text = medicine.closestPharmacy?.name
             holder.hyphenText.text = "-"
         } else {
-            holder.pharmacyName.text = "Not found in any pharmacy"
+            holder.pharmacyName.text = context.getString(R.string.not_found_in_any_pharmacy)
             holder.hyphenText.text = ""
             holder.pharmacyDistance.text = ""
         }
         if (medicine.closestDistance != null) {
-            holder.pharmacyDistance.text = "${medicine.closestDistance.toString()} m"
+            holder.pharmacyDistance.text = context.getString(R.string.distance,
+                String.format(Locale.US, "%.1f", medicine.closestDistance))
         }
 
         holder.itemView.setOnClickListener {
