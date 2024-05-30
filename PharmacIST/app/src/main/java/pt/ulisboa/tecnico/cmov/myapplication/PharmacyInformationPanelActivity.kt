@@ -29,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
@@ -118,61 +119,59 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     }
 
     private fun addToFavorite() {
-        val data = hashMapOf("name" to pharmacyName)
-        db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
-            .add(data)
+        val updates = hashMapOf<String, Any>(
+            "favorite_pharmacies" to FieldValue.arrayUnion(pharmacyName)
+        )
+
+        db.collection("users").document(auth.uid!!)
+            .update(updates)
             .addOnSuccessListener {
                 isInUsersFavorite = true
                 findViewById<ImageButton>(R.id.favoriteIcon).isSelected = true
                 Log.d(TAG, "addToFavorite: added to favorite")
+
             }
             .addOnFailureListener { e ->
                 Log.d(TAG, "addToFavorite: failed to add to favorite due to ${e.message}")
                 showToast(R.string.something_went_wrong)
             }
+
     }
 
     private fun removeFromFavorite() {
-        db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
-            .whereEqualTo("name", pharmacyName)
-            .get()
-            .addOnSuccessListener {documents ->
-                if (!documents.isEmpty) {
-                    deleteDocument(documents.documents.first().id)
-                    isInUsersFavorite = false
-                    findViewById<ImageButton>(R.id.favoriteIcon).isSelected = false
-                    Log.d(TAG, "removeFromFavorite: removed from favorite")
-                }
-                else {
-                    Log.d(TAG, "removeFromFavorite: No pharmacy matched")
-                    showToast(R.string.something_went_wrong)
-                }
+        val updatesToRemove = hashMapOf<String, Any>(
+            "favorite_pharmacies" to FieldValue.arrayRemove(pharmacyName)
+        )
+
+        db.collection("users").document(auth.uid!!)
+            .update(updatesToRemove)
+            .addOnSuccessListener {
+                isInUsersFavorite = false
+                findViewById<ImageButton>(R.id.favoriteIcon).isSelected = false
+                Log.d(TAG, "removeFromFavorite: removed from favorite")
             }
-            .addOnFailureListener {e ->
-                Log.d(TAG, "removeFromFavorite: Failed to remove favorite")
+            .addOnFailureListener {
+                Log.w(TAG, "removeFromFavorite: Failed to remove favorite")
                 showToast(R.string.something_went_wrong)
             }
     }
 
     private fun checkIsFavorite() {
-        db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
-            .whereEqualTo("name", pharmacyName)
-            .get()
-            .addOnSuccessListener {documents ->
-                isInUsersFavorite = !documents.isEmpty
-                findViewById<ImageButton>(R.id.favoriteIcon).isSelected = isInUsersFavorite
-            }
-    }
 
-    private fun deleteDocument(documentId: String) {
-        val docRef = db.collection("users").document(auth.uid!!).collection("favorite_pharmacies").document(documentId)
-
-        docRef.delete()
-            .addOnSuccessListener {
-                Log.d(TAG, "Document with ID $documentId successfully deleted!")
+        db.collection("users").document(auth.uid!!).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val favorites = document.get("favorite_pharmacies") as? List<String>
+                    isInUsersFavorite = favorites != null && pharmacyName in favorites
+                    findViewById<ImageButton>(R.id.favoriteIcon).isSelected = isInUsersFavorite
+                    Log.d(TAG, "is in favorite?: " + isInUsersFavorite)
+                } else {
+                    Log.d(TAG, "Document does not exist")
+                }
             }
             .addOnFailureListener { e ->
-                Log.d(TAG, "Error deleting document: $e")
+                Log.w(TAG, "Error getting document", e)
+                showToast(R.string.something_went_wrong)
             }
     }
 
@@ -255,13 +254,11 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             if (auth.currentUser != null)
                 showRatingDialog()
             else
-            // TODO: display this error on the screen
-                Log.e(TAG, "no user logged")
+                showToast(R.string.not_logged_in)
         }
     }
 
     private fun showRatingDialog() {
-        // Inflate the dialog layout
         val dialogView = layoutInflater.inflate(R.layout.rating_dialog, null)
         val ratingBar = dialogView.findViewById<RatingBar>(R.id.ratingBar)
 
@@ -294,7 +291,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
 
     private fun updateRatingList() {
         val list = mutableListOf<Int>()
-        // TODO: maybe instead of accessing database, use a mutable map for ranking list (user -> rate), and thus update the map while update the rate
         db.collection("pharmacies").document(pharmacyName!!).collection("ratings").get()
             .addOnSuccessListener { documents ->
                 for (document in documents.documents) {
