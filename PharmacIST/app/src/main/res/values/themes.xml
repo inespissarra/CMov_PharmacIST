@@ -32,6 +32,7 @@
         <item name="titleTextColor">@color/brown_2</item>
         <item name="subtitleTextColor">@color/brown_1</item>
         <item name="warningColor">@color/red_2</item>
+        <item name="axisLabelColor">@color/brown_3</item>
 
     </style>
 

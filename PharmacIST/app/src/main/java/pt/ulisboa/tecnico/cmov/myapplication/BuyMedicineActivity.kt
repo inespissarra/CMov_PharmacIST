@@ -76,8 +76,8 @@ class BuyMedicineActivity : AppCompatActivity() {
 
     private fun makePurchase(medicineName: String, amount: Int){
         Log.d(TAG, "pharmacy name: $pharmacyName\nmedicine name: $medicineName")
-        db.collection("stock").document(pharmacyName + "_" + medicineName)
-            .update("amount", FieldValue.increment((-amount).toLong()))
+        db.collection("pharmacies").document(pharmacyName).collection("medicines").document(medicineName)
+            .update("stock", FieldValue.increment((-amount).toLong()))
             .addOnSuccessListener {
                 Log.d(TAG, "Medicine bought successfully")
                 showToast(R.string.medicine_bought_successfully)

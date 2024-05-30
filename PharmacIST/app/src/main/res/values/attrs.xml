@@ -20,4 +20,5 @@
     <attr name="subtitleTextColor" format="color"/>
     <attr name="divisionLineColor" format="color"/>
     <attr name="warningColor" format="color"/>
+    <attr name="axisLabelColor" format="color"/>
 </resources>

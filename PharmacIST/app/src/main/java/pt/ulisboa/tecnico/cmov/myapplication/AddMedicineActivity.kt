@@ -37,7 +37,7 @@ class AddMedicineActivity : AppCompatActivity() {
     private lateinit var amountText: EditText
     private lateinit var purposeText: EditText
     private var barcode: String? = null
-    private var pharmacy: String? = null
+    private lateinit var pharmacy: PharmacyMetaData
     private var imageUri: Uri? = null
     private lateinit var db: FirebaseFirestore
 
@@ -68,7 +68,7 @@ class AddMedicineActivity : AppCompatActivity() {
         amountText = findViewById(R.id.amountField)
         purposeText = findViewById(R.id.purposeField)
         barcode = intent.getStringExtra("barcode")
-        pharmacy = intent.getStringExtra("pharmacyName")
+        pharmacy = intent.getParcelableExtra("pharmacy")!!
         db = Firebase.firestore
 
         val registerButton: Button = findViewById(R.id.registerBtn)
@@ -84,42 +84,60 @@ class AddMedicineActivity : AppCompatActivity() {
             val medicineName = nameText.text.toString()
             val purpose = purposeText.text.toString()
             val amount = amountText.text.toString().toInt()
-            addNewMedicine(medicineName, purpose)
+            addNewMedicine(medicineName, purpose, amount)
             addNewMedicineToStock(medicineName, purpose, amount)
         }
         else
             showToast(R.string.fill_mandatory_fields)
     }
 
-    private fun addNewMedicine(medicineName: String, purpose: String) {
+    private fun addNewMedicine(medicineName: String, purpose: String, amount: Int) {
         val medicine = hashMapOf(
             "name" to medicineName,
             "description" to purpose,
             "barcode" to barcode,
             "image" to imageUri
         )
+
+        val stock = hashMapOf(
+            "name" to pharmacy.name,
+            "locationName" to pharmacy.locationName,
+            "longitude" to pharmacy.longitude,
+            "latitude" to pharmacy.latitude,
+            "picture" to pharmacy.picture,
+            "stock" to amount
+        )
+
         db.collection("medicines").document(medicineName)
             .set(medicine)
             .addOnSuccessListener {
                 Log.d(TAG, "Medicine registered successfully")
                 showToast(R.string.medicine_registered)
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Error registering medicine")
+                showToast(R.string.something_went_wrong)
+            }
+
+        db.collection("medicines").document(medicineName).collection("pharmacies").document(pharmacy.name!!)
+            .set(stock)
+            .addOnSuccessListener {
                 finish()
             }
             .addOnFailureListener {
                 Log.e(TAG, "Error registering medicine")
-                showToast(R.string.error_registering_medicine)
+                showToast(R.string.something_went_wrong)
             }
     }
 
     private fun addNewMedicineToStock(medicineName: String, purpose: String, amount: Int) {
         val stock = hashMapOf(
-            "medicine" to medicineName,
+            "name" to medicineName,
             "description" to purpose,
             "image" to imageUri,
-            "pharmacy" to pharmacy,
-            "amount" to amount
+            "stock" to amount
         )
-        db.collection("stock").document(pharmacy + "_" + medicineName)
+        db.collection("pharmacies").document(pharmacy.name!!).collection("medicines").document(medicineName)
             .set(stock)
             .addOnSuccessListener {
                 Log.d(TAG, "Medicine registered successfully")
@@ -128,7 +146,7 @@ class AddMedicineActivity : AppCompatActivity() {
             }
             .addOnFailureListener {
                 Log.e(TAG, "Error registering medicine")
-                showToast(R.string.error_registering_medicine)
+                showToast(R.string.something_went_wrong)
             }
     }
 

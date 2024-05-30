@@ -7,6 +7,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -65,14 +66,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         //createPharmacyName()
         getDataFromIntent()
 
-
-        /*createPharmacyImage()
-        createPharmacyAddress()*/
         updateRatingList()
-        Log.d(TAG, "list after updated: " + ratingList.joinToString(", "))
-        Log.d(TAG, "list only has zero: " + ratingList.all { it == 0 })
-        /*if (! ratingList.all { it == 0 })
-            createRatingHistogram()*/
         ratingButtonEvent()
 
         createSharePharmacy()
@@ -219,30 +213,41 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         barChart.setDrawBarShadow(false)
         barChart.setDrawGridBackground(false)
 
+        // Fetch the color from the attribute
+        val typedValue = TypedValue()
+        theme.resolveAttribute(R.attr.axisLabelColor, typedValue, true)
+        val axisLabelColor = typedValue.data
+
         val xAxis = barChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false)
         xAxis.granularity = 1f
         xAxis.isGranularityEnabled = true
-        // xAxis.valueFormatter = IndexAxisValueFormatter(arrayListOf())
+        xAxis.textColor = axisLabelColor
+        xAxis.axisLineColor = axisLabelColor
+        xAxis.axisLineWidth = 2f
 
         val maxValue = ratingCounts.maxOrNull() ?: 0
 
         // Set the axis minimum and maximum values
         val leftAxis: YAxis = barChart.axisLeft
         leftAxis.axisMinimum = 0f
-        leftAxis.axisMaximum = (maxValue + 1).toFloat()  // Adding 1 to leave some space at the top
+        leftAxis.axisMaximum = (maxValue + 1).toFloat()
 
-        // Set the scale (granularity) based on the maximum value
         if (maxValue < 10) {
             leftAxis.granularity = 1f
             leftAxis.isGranularityEnabled = true
         }
+        leftAxis.setDrawGridLines(false)
+        leftAxis.textColor = axisLabelColor
+        leftAxis.axisLineColor = axisLabelColor
+        leftAxis.axisLineWidth = 2f
 
-        barChart.axisRight.isEnabled = false  // Disable right Y-axis
-
-        barChart.axisLeft.setDrawGridLines(false)
+        barChart.axisRight.isEnabled = false
         barChart.legend.isEnabled = true
+        barChart.legend.textColor = axisLabelColor
+
+        barChart.setExtraOffsets(0f, 0f, 0f, 20f)
 
         barChart.invalidate()
 
@@ -410,7 +415,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val manageStock: Button = findViewById(R.id.manageStock)
         manageStock.setOnClickListener {
             val intent = Intent(this, ScanBarcodeActivity::class.java)
-            intent.putExtra("pharmacyName", pharmacyName)
+            intent.putExtra("pharmacy", intent.getParcelableExtra<PharmacyMetaData>("pharmacy"))
             this.startActivity(intent)
         }
     }

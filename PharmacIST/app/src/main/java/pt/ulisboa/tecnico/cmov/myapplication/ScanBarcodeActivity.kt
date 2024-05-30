@@ -42,6 +42,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
     private lateinit var resultText: TextView
     private lateinit var addRegisterButton: Button
     private var pharmacyName: String? = null
+    private lateinit var pharmacy: PharmacyMetaData
     private var db: FirebaseFirestore = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +62,8 @@ class ScanBarcodeActivity : AppCompatActivity() {
             else requestStoragePermissions()
         }
 
-        pharmacyName = intent.getStringExtra("pharmacyName")
+        pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
+        pharmacyName = pharmacy.name
 
         resultText = findViewById(R.id.resultIv)
         addRegisterButton = findViewById(R.id.addRegisterButton)
@@ -104,7 +106,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
                     resultText.text = "Barcode: $barcode\nBarcode matches existent stock"
                     addRegisterButton.text = "Add stock to medicine"
                     addRegisterButton.setOnClickListener {
-                        addAmountDialog(medicine.name!!, object: AddAmoutCallback{
+                        addAmountDialog(medicine, object: AddAmountCallback{
                             override fun onSuccess(){
                                 finish()
                             }
@@ -117,7 +119,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
                     addRegisterButton.text = "Register new medicine"
                     addRegisterButton.setOnClickListener {
                         val intent = Intent(this, AddMedicineActivity::class.java)
-                        intent.putExtra("pharmacyName", pharmacyName)
+                        intent.putExtra("pharmacy", pharmacy)
                         intent.putExtra("barcode", barcode)
                         this.startActivity(intent)
                         finish()
@@ -233,7 +235,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
         }
     }
 
-    private fun addAmountDialog(medicine: String, callback: AddAmoutCallback) {
+    private fun addAmountDialog(medicine: MedicineMetaData, callback: AddAmountCallback) {
         var amount : Int? = null
         val inflater = layoutInflater
         val dialogLayout = inflater.inflate(R.layout.amount_dialog_box_layout, null)
@@ -256,20 +258,42 @@ class ScanBarcodeActivity : AppCompatActivity() {
 
         dialog.show()
     }
-    interface AddAmoutCallback {
+    interface AddAmountCallback {
         fun onSuccess()
         fun onFailure()
     }
 
-    private fun addAmountToMedicine(medicineName: String, amount: Int) {
-        Log.d(TAG, "pharmacy name: " + pharmacyName + "\nmedicine name: " + medicineName)
-        db.collection("stock").document(pharmacyName + "_" + medicineName)
-            .update("amount", FieldValue.increment(amount.toLong()))
-            .addOnSuccessListener {
-                Log.d(TAG, "stock added successfully")
-            }
-            .addOnFailureListener {
-                Log.e(TAG, "stock addition failed")
+    private fun addAmountToMedicine(medicine: MedicineMetaData, amount: Int) {
+        Log.d(TAG, "pharmacy name: " + pharmacyName + "\nmedicine name: " + medicine.name)
+
+        val stockRef = db.collection("pharmacies").document(pharmacyName!!).collection("medicines").document(medicine.name!!)
+
+        stockRef.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    stockRef.update("stock", FieldValue.increment(amount.toLong()))
+                        .addOnSuccessListener {
+                            Log.d(TAG, "stock added successfully")
+                        }
+                        .addOnFailureListener {
+                            Log.e(TAG, "stock addition failed")
+                        }
+                }
+                else {
+                    val stock = hashMapOf(
+                        "name" to medicine.name,
+                        "description" to medicine.description,
+                        "image" to medicine.image,
+                        "stock" to amount
+                    )
+                    stockRef.set(stock)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "Stock created successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e(TAG, "Stock creation failed", e)
+                        }
+                }
             }
     }
 
