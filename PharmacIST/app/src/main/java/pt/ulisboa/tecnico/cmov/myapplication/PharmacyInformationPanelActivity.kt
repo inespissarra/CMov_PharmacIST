@@ -155,7 +155,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         db.collection("users").document(auth.uid!!).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    val favorites = document.get("favorite_pharmacies") as? List<String>
+                    val favorites = document.get("favorite_pharmacies") as? List<*>
                     isInUsersFavorite = favorites != null && pharmacyName in favorites
                     findViewById<ImageButton>(R.id.favoriteIcon).isSelected = isInUsersFavorite
                     Log.d(TAG, "is in favorite?: " + isInUsersFavorite)
@@ -169,6 +169,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             }
     }
 
+    @Suppress("DEPRECATION")
     private fun getDataFromIntent() {
         Log.d(TAG, "here")
         val pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
@@ -411,6 +412,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             }
     }
 
+    @Suppress("DEPRECATION")
     private fun createManageStock() {
         val manageStock: Button = findViewById(R.id.manageStock)
         manageStock.setOnClickListener {

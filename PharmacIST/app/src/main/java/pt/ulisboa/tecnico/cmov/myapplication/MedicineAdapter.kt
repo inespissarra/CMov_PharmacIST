@@ -36,7 +36,7 @@ class MedicineAdapter(private val context: Context, private var dataList: ArrayL
     override fun onBindViewHolder(holder: MedicineViewHolder, position: Int) {
         val medicine = dataList[position]
 
-        if (checkConnectivity(context) == 2 && medicine.medicineMetaData?.image != null) {
+        if (checkConnectivity(context) == 2) {
             Glide.with(context).load(medicine.medicineMetaData!!.image).into(holder.recImage)
         } else {
             Glide.with(context).load(R.drawable.placeholder).into(holder.recImage)
@@ -65,7 +65,7 @@ class MedicineAdapter(private val context: Context, private var dataList: ArrayL
         }
 
         holder.recImage.setOnClickListener {
-            if (checkConnectivity(context) != 0 && medicine.medicineMetaData?.image != null) {
+            if (checkConnectivity(context) != 0) {
                 Glide.with(context).load(medicine.medicineMetaData!!.image).into(holder.recImage)
             }
         }

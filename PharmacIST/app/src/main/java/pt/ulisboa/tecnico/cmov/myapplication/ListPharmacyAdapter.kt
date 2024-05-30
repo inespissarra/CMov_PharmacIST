@@ -19,19 +19,11 @@ class ListPharmacyAdapter(private val context: Context,
     var onItemClick : ((PharmacyMetaData) -> Unit)? = null
 
     inner class PharmacyListViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-        val recPharmacyImage: ImageView
-        val recPharmacyName: TextView
-        val recPharmacyStock: TextView
-        val recPharmacyLocation: TextView
-        val recPharmacyDistance: TextView
-
-        init {
-            recPharmacyImage = itemView.findViewById(R.id.recPharmacyImage)
-            recPharmacyName = itemView.findViewById(R.id.recPharmacyName)
-            recPharmacyStock = itemView.findViewById(R.id.recPharmacyStock)
-            recPharmacyLocation = itemView.findViewById(R.id.recPharmacyLocation)
-            recPharmacyDistance = itemView.findViewById(R.id.recPharmacyDistance)
-        }
+        val recPharmacyImage: ImageView = itemView.findViewById(R.id.recPharmacyImage)
+        val recPharmacyName: TextView = itemView.findViewById(R.id.recPharmacyName)
+        val recPharmacyStock: TextView = itemView.findViewById(R.id.recPharmacyStock)
+        val recPharmacyLocation: TextView = itemView.findViewById(R.id.recPharmacyLocation)
+        val recPharmacyDistance: TextView = itemView.findViewById(R.id.recPharmacyDistance)
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PharmacyListViewHolder {
         val view: View = LayoutInflater.from(parent.context).inflate(R.layout.recycler_item_pharmacy, parent, false)
@@ -49,7 +41,7 @@ class ListPharmacyAdapter(private val context: Context,
         val distance = distanceStockPair.first
         val stock = distanceStockPair.second
 
-        if (checkConnectivity(context) == 2 && pharmacyMetaData.picture != null) {
+        if (checkConnectivity(context) == 2) {
             Glide.with(context).load(pharmacyMetaData.picture).into(holder.recPharmacyImage)
         } else {
             Glide.with(context).load(R.drawable.placeholder).into(holder.recPharmacyImage)
@@ -75,7 +67,7 @@ class ListPharmacyAdapter(private val context: Context,
         }
 
         holder.recPharmacyImage.setOnClickListener {
-            if (checkConnectivity(context) != 0 && pharmacyMetaData.picture != null) {
+            if (checkConnectivity(context) != 0) {
                 Glide.with(context).load(pharmacyMetaData.picture).into(holder.recPharmacyImage)
             }
         }

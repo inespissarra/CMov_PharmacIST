@@ -28,7 +28,7 @@ import com.google.firebase.ktx.Firebase
 class MedicineInformationPanelActivity : AppCompatActivity() {
 
     companion object {
-        val TAG = "MedicineInformationPanelActivity"
+        const val TAG = "MedicineInformationPanelActivity"
         private const val LOCATION_REQUEST_CODE = 1
     }
 
@@ -60,6 +60,7 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
 
         adapter = ListPharmacyAdapter(this, pharmacyList)
         recyclerView.adapter = adapter
+        adapter.setPharmacyDataList(pharmacyList)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -134,13 +135,8 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             medicineNameView.text = this.getString(R.string.name_not_found)
         }
         Log.d(TAG, "Got medicine name: ${medicineNameView.text}")
-        if (medicineMetaData.image != null) {
-            Log.d(TAG, "Got medicine image: ${medicineMetaData.image}")
-            Glide.with(this@MedicineInformationPanelActivity).load(medicineMetaData.image).into(medicineImageView)
-        } else {
-            Log.d(TAG, "Got placeholder image for medicine")
-            Glide.with(this@MedicineInformationPanelActivity).load(R.drawable.placeholder).into(medicineImageView)
-        }
+
+        Glide.with(this@MedicineInformationPanelActivity).load(medicineMetaData.image).into(medicineImageView)
 
         if (medicineMetaData.description != null) {
             medicineDescriptionView.text = medicineMetaData.description
@@ -149,8 +145,9 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun getMedicineMetaDataFromIntent() {
-        medicine = intent.getParcelableExtra<MedicineMetaData>("medicine")
+        medicine = intent.getParcelableExtra("medicine")
 
         Log.d(TAG, "Retrieved medicine: $medicine")
         if (medicine != null) {
@@ -158,8 +155,9 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun getMedicineEntryFromIntent() {
-        medicineEntry = intent.getParcelableExtra<MedicinePharmacyDBEntryData>("medicine")
+        medicineEntry = intent.getParcelableExtra("medicine")
         userLatitude = intent.getDoubleExtra("userLatitude", 0.0)
         userLongitude = intent.getDoubleExtra("userLongitude", 0.0)
 
@@ -212,9 +210,8 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
                 pharmacyList.add(Pair(pharmacyMetaData,
                     Pair(pharmacyMetaData.getDistance(userLatitude, userLongitude), stock)))
             }
-
-            adapter.setPharmacyDataList(pharmacyList)
             Log.d(TAG, "Finished loading data from DB, pharmacyList=$pharmacyList")
+            adapter.notifyItemRangeChanged(0, pharmacyList.size)
         }.addOnFailureListener {
             Log.e(TAG, "Error loading data from DB, error=$it")
             Toast.makeText(this, R.string.error_loading_data, Toast.LENGTH_SHORT).show()
@@ -233,7 +230,7 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         val pharmacyMap = medicineEntry?.pharmacyMap
 
         if (pharmacyMap != null) {
-            for ((pharmacyName, pharmacyPair) in pharmacyMap) {
+            for ((_, pharmacyPair) in pharmacyMap) {
                 val pharmacyMetaData = pharmacyPair.first
                 val stock = pharmacyPair.second
                 val distance = pharmacyMetaData.getDistance(userLatitude, userLongitude)
@@ -243,9 +240,7 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             val sortedList = pharmacyList.sortedBy { it.second.first }
             pharmacyList.clear()
             pharmacyList.addAll(sortedList)
-
             Log.d(TAG, "Final pharmacy list: $pharmacyList")
-            adapter.setPharmacyDataList(pharmacyList)
             Log.d(TAG, "Finished adapter")
         } else {
             Log.d(TAG, "Pharmacy map is null")

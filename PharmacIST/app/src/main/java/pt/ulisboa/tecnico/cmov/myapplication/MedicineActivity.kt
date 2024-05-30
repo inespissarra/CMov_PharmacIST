@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.app.ActivityCompat
@@ -21,19 +20,17 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import pt.ulisboa.tecnico.cmov.pharmacist.databinding.ActivityMedicineBinding
 import java.util.Locale
 
 class MedicineActivity : AppCompatActivity() {
 
     companion object {
-        val TAG = "MedicineActivity"
+        const val TAG = "MedicineActivity"
         private const val LOCATION_REQUEST_CODE = 1
     }
 
     private var db: FirebaseFirestore = Firebase.firestore
 
-    private lateinit var binding: ActivityMedicineBinding
     private lateinit var adapter: MedicineAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
@@ -259,6 +256,8 @@ class MedicineActivity : AppCompatActivity() {
                 it.medicineMetaData?.name?.lowercase()?.contains(query.lowercase(Locale.getDefault())) == true
             }
 
+            var itemsAdded = filteredList.size
+
             Log.d(TAG, "searchMedicine - Filtered list = $filteredList")
 
             if (query.length >= 2 && new && hasMoreData) {
@@ -280,6 +279,7 @@ class MedicineActivity : AppCompatActivity() {
 
                                 if (!filteredList.any { it.medicineMetaData == item.medicineMetaData }) {
                                     filteredList.add(item)
+                                    itemsAdded++
                                     if (!medicineList.any { it.medicineMetaData == item.medicineMetaData }) {
                                         medicineList.add(item)
                                         medicineRepository.insertOrUpdate(medicineMetaData)
@@ -302,21 +302,21 @@ class MedicineActivity : AppCompatActivity() {
                                         if (item.pharmacyMap!!.isNotEmpty() && currentLocation != null) {
                                             val sortedPharmacies = item.pharmacyMap?.filterValues { it.second > 0 }?.values?.sortedBy {
                                                 it.first.getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
-                                            } as ArrayList<PharmacyMetaData>
-                                            item.closestPharmacy = sortedPharmacies[0]
+                                            } as ArrayList<*>
+                                            item.closestPharmacy = sortedPharmacies[0] as PharmacyMetaData?
                                             item.closestDistance = item.closestPharmacy!!
                                                 .getDistance(currentLocation!!.latitude, currentLocation!!.longitude)
                                         }
                                     }
                             }
-                            adapter.notifyDataSetChanged()
+                            adapter.notifyItemRangeChanged(0, itemsAdded)
                         }.
                         addOnFailureListener {
                             showToast(R.string.error_loading_data)
                         }
             }
             else {
-                adapter.notifyDataSetChanged()
+                adapter.notifyItemRangeChanged(0, itemsAdded)
             }
             if (filteredList.isEmpty() && new) {
                 showToast(R.string.no_medicine_found)
@@ -324,40 +324,8 @@ class MedicineActivity : AppCompatActivity() {
         } else {
             inSearch = false
             filteredList.addAll(medicineList)
-            adapter.notifyDataSetChanged()
+            adapter.notifyItemRangeChanged(0, filteredList.size)
         }
-    }
-
-    /*
-    private fun eventChangeListener() {
-
-        db = Firebase.firestore
-        db.collection("medicines").get().
-                addOnSuccessListener {
-                    if (!it.isEmpty) {
-                        for (data in it.documents) {
-                            val medicine: MedicineMetaData? = data.toObject(MedicineMetaData::class.java)
-                            if (medicine != null) {
-                                medicineList.add(medicine)
-                            }
-                        }
-                        adapter.setMedicineList( medicineList)
-                        recyclerView.adapter = adapter
-                    }
-                }.
-                addOnFailureListener {
-                    Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
-                }
-
-    }
-    */
-
-    private fun displayProgressPopUp() {
-        val builder = AlertDialog.Builder(this@MedicineActivity)
-        builder.setCancelable(false)
-        builder.setView(R.layout.progress_layout)
-        val dialog = builder.create()
-        dialog.show()
     }
 
     private fun createBottomNavigation() {
