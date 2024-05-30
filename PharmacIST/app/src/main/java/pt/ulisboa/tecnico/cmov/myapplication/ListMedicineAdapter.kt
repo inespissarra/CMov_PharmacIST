@@ -14,7 +14,8 @@ import com.bumptech.glide.Glide
 class ListMedicineAdapter(private val context: Context, private var dataList: Map<MedicineMetaData, Int>, private var pharmacyName : String)
     : RecyclerView.Adapter<ListMedicineAdapter.MedicineViewHolder>() {
     var onItemClick : ((MedicineMetaData) -> Unit)? = null
-    private var medicineStockList: List<Map.Entry<MedicineMetaData, Int>> = dataList.entries.toList()
+    private var medicineStockList: ArrayList<Pair<MedicineMetaData, Int>> =
+        dataList.map { Pair(it.key, it.value) }.toCollection(ArrayList())
     private var pharmacy : String = pharmacyName
 
     inner class MedicineViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
@@ -40,8 +41,8 @@ class ListMedicineAdapter(private val context: Context, private var dataList: Ma
     }
 
     override fun onBindViewHolder(holder: MedicineViewHolder, position: Int) {
-        val medicine = medicineStockList[position].key
-        val amount = medicineStockList[position].value
+        val medicine = medicineStockList[position].first
+        val amount = medicineStockList[position].second
 
         Glide.with(context).load(medicine.image).into(holder.recImage)
 
@@ -49,7 +50,7 @@ class ListMedicineAdapter(private val context: Context, private var dataList: Ma
         holder.stockNumber.text = amount.toString()
 
         holder.buyButton.setOnClickListener {
-            val intent: Intent = Intent(context, BuyMedicineActivity::class.java)
+            val intent = Intent(context, BuyMedicineActivity::class.java)
             intent.putExtra("medicine", medicine)
             intent.putExtra("stock", amount)
             intent.putExtra("pharmacyName", pharmacy)
@@ -61,7 +62,11 @@ class ListMedicineAdapter(private val context: Context, private var dataList: Ma
         }
     }
 
+    fun addMedicineStock(medicine: MedicineMetaData, stock: Int) {
+        medicineStockList.add(Pair(medicine, stock))
+    }
+
     fun setMedicineStockList(dataList: Map<MedicineMetaData, Int>) {
-        this.medicineStockList = dataList.entries.toList()
+        this.medicineStockList = dataList.map { Pair(it.key, it.value) }.toCollection(ArrayList())
     }
 }

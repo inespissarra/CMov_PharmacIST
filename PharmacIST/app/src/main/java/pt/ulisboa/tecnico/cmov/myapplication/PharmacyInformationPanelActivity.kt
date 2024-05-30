@@ -25,15 +25,14 @@ import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
-import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.firestore.SetOptions
 
 class PharmacyInformationPanelActivity: AppCompatActivity() {
 
@@ -51,6 +50,9 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private var isInUsersFavorite = false
     private lateinit var adapter: ListMedicineAdapter
     private lateinit var stockListView: RecyclerView
+    private var isLoading: Boolean = false
+    private var hasMoreData: Boolean = true
+    private var lastFetch: DocumentSnapshot? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -180,13 +182,13 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val name : TextView = findViewById(R.id.pharmacyName)
         val address : TextView = findViewById(R.id.pharmacyLocation)
         val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
+        Log.d(TAG, "Got pharmacy $pharmacy")
 
         name.text = pharmacy.name
         pharmacyName = pharmacy.name
         address.text = pharmacy.locationName
         pharmacyAddress = pharmacy.locationName
         pharmacyLatLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
-        Log.d(TAG, pharmacyName.toString())
         Glide.with(this@PharmacyInformationPanelActivity).load(pharmacy.picture).into(pharmacyImage)
     }
 
@@ -340,9 +342,23 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         stockListView.layoutManager = GridLayoutManager(this@PharmacyInformationPanelActivity, 1)
         medicineStock = mutableMapOf()
         adapter = ListMedicineAdapter(this, medicineStock, pharmacyName!!)
+        stockListView.adapter = adapter
+
+        stockListView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (!recyclerView.canScrollVertically(1) && !isLoading && hasMoreData) {
+                    Log.d(TAG, "Loading more data, since we reached the bottom")
+                    getStock()
+                }
+            }
+        })
+
         adapter.onItemClick = {
             val intent = Intent(this, MedicineInformationPanelActivity::class.java)
+            intent.putExtra("sender", "PharmacyInformationPanelActivity")
             intent.putExtra("medicine", it)
+            Log.d(TAG, "Sending intent to MedicineInformationPanelActivity with medicine $it")
             startActivity(intent)
         }
 
@@ -350,25 +366,46 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     }
 
     private fun getStock() {
-        db.collection("stock")
-            .whereEqualTo("pharmacy", pharmacyName)
+        isLoading = true
+
+        Log.d(TAG, "Getting stock for pharmacy $pharmacyName from DB")
+        db.collection("pharmacies")
+            .whereEqualTo("name", pharmacyName)
             .get()
             .addOnSuccessListener { documents ->
+                Log.d(TAG, "Found ${documents.documents}")
                 for (document in documents.documents) {
-                    val medicineName = document.getString("medicine")
-                    val medicineImage = document.getString("image")
-                    val medicineDescription = document.getString("description")
-                    val amount = document.getLong("amount")!!.toInt()
-                    if (amount != 0) {
-                        val medicine = MedicineMetaData(name = medicineName, image = medicineImage,
-                            description = medicineDescription)
-                        medicineStock[medicine] = amount
+
+                    var medicineQuery = document.reference
+                        .collection("medicines")
+                        .limit(10)
+                        .orderBy("name")
+                        .whereGreaterThan("stock", 0)
+
+                    lastFetch?.let {
+                        medicineQuery = medicineQuery.startAfter(it)
+                    }
+
+                    medicineQuery.get().addOnSuccessListener {
+                        for (doc in it.documents) {
+                            Log.d(TAG, "Getting stock of medicine ${doc.id}")
+                            val amount = doc.getLong("stock")?.toInt() ?: 0
+                            if (amount != 0) {
+                                val medicine = doc.toObject(MedicineMetaData::class.java)!!
+                                medicineStock[medicine] = amount
+                                adapter.addMedicineStock(medicine, amount)
+                                adapter.notifyItemChanged(medicineStock.size - 1)
+                            }
+                        }
+                        Log.d(TAG, "Final stock for $pharmacyName = $medicineStock")
+                    }.addOnFailureListener {
+                        Log.e(TAG, "Failed to get stock for pharmacy $pharmacyName, error=$it")
+                        showToast(R.string.something_went_wrong)
                     }
                 }
-                adapter.setMedicineStockList(medicineStock)
-                stockListView.adapter = adapter
             }
             .addOnFailureListener {
+                Log.e(TAG, "Failed to get pharmacy $pharmacyName, error=$it")
                 showToast(R.string.something_went_wrong)
             }
     }

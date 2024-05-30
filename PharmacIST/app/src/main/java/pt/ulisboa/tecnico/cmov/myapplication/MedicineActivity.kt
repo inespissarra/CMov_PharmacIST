@@ -76,6 +76,7 @@ class MedicineActivity : AppCompatActivity() {
 
         adapter.onItemClick = {
             val intent = Intent(this, MedicineInformationPanelActivity::class.java)
+            intent.putExtra("sender", "MedicineActivity")
             intent.putExtra("medicine", it)
             intent.putExtra("userLatitude", currentLocation?.latitude)
             intent.putExtra("userLongitude", currentLocation?.longitude)
@@ -144,9 +145,7 @@ class MedicineActivity : AppCompatActivity() {
 
     private fun checkLocationPermission() : Boolean {
         return (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED) /*||
-            ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED)*/
+            == PackageManager.PERMISSION_GRANTED)
     }
 
     private fun requestUserLocation() {
