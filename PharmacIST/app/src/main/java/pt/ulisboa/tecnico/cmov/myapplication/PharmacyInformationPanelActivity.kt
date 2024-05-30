@@ -422,31 +422,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         }
     }
 
-    /**
-     * Checks what type of connectivity the user has
-     *
-     * @param context The context of the caller
-     * @return Int: 0 -> No connectivity; 1 -> Mobile Data; WiFi or stronger -> 2
-     */
-    private fun checkConnectivity(context: Context): Int {
-        //
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val capabilities =
-            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-        if (capabilities != null) {
-            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
-                return 1
-            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
-                return 2
-            }
-        }
-        return 0
-    }
-
     private fun showToast(message: Int){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
