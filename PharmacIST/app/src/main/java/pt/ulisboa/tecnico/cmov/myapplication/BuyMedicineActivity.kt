@@ -42,12 +42,16 @@ class BuyMedicineActivity : AppCompatActivity() {
 
         // NAME
         val medicineNameTextView: TextView = findViewById(R.id.medicineName)
-        if (medicine.name == null) medicineNameTextView.text = "ErrorName"
+        if (medicine.name == null) {
+            showToast(R.string.something_went_wrong)
+            Log.e(TAG, "Error loading medicine's name")
+            finish()
+            //medicineNameTextView.text = "ErrorName"
+        }
         else {
             medicineNameTextView.text = medicine.name
             getStock(medicine.name!!)
         }
-        if (medicine.name == "ErrorName") Log.e(PharmacyInformationPanelActivity.TAG, "Error loading medicine's name")
 
         // IMAGE
         val medicineImage: ImageView = findViewById(R.id.medicineImage)
@@ -61,7 +65,9 @@ class BuyMedicineActivity : AppCompatActivity() {
     }
 
     private fun getStock(medicineName: String) {
-        db.collection("pharmacies").document(pharmacyName).collection("medicines").document(medicineName).get()
+        db.collection("pharmacies").document(pharmacyName).
+        collection("medicines").
+        document(medicineName).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
                     stock = document.getLong("stock")!!.toInt()
@@ -87,51 +93,55 @@ class BuyMedicineActivity : AppCompatActivity() {
         }
     }
 
-    private fun makePurchase(medicineName: String, amount: Int){
+    private fun makePurchase(medicineName: String, amount: Int) {
         Log.d(TAG, "pharmacy name: $pharmacyName\nmedicine name: $medicineName")
-        db.collection("pharmacies").document(pharmacyName).collection("medicines").document(medicineName)
-            .update("stock", FieldValue.increment((-amount).toLong()))
-            .addOnSuccessListener {
-                Log.d(TAG, "Medicine bought successfully")
-            }
-            .addOnFailureListener {
-                Log.e(TAG, "Error buying medicine")
-                showToast(R.string.error_buying_medicine)
+        // Trade parallelism of queries to ensure both are done or neither are
 
-            }
-
-        db.runTransaction { transaction ->
-            val medicineRef = db.collection("medicines")
+        // Delete medicine instead
+        if (stock - amount == 0) {
+            db.collection("pharmacies").document(pharmacyName)
+                .collection("medicines")
                 .document(medicineName)
-                .collection("pharmacies")
-                .document(pharmacyName)
-
-            // Get the current stock value
-            val snapshot = transaction.get(medicineRef)
-            val currentStock = snapshot.getLong("stock") ?: throw Exception("Stock field missing")
-
-            // Calculate the new stock value
-            val newStock = currentStock - amount
-            if (newStock < 0) {
-                throw Exception("Not enough stock available")
-            }
-
-            // Update the stock value
-            transaction.update(medicineRef, "stock", newStock)
-
-            // Return the new stock value
-
-            stock = newStock.toInt()
-            val stockAmountTextView: TextView = findViewById(R.id.stockAmount)
-            stockAmountTextView.text = stock.toString()
-            newStock
-        }.addOnSuccessListener { newStock ->
-            Log.d(TAG, "Medicine bought successfully, new stock: $newStock")
-            showToast(R.string.medicine_bought_successfully)
-            finish()
-        }.addOnFailureListener { e ->
-            Log.e(TAG, "Error buying medicine", e)
-            showToast(R.string.error_buying_medicine)
+                .delete()
+                .addOnSuccessListener {
+                    db.collection("medicines").document(medicineName)
+                        .collection("pharmacies")
+                        .document(pharmacyName)
+                        .delete()
+                        .addOnSuccessListener {
+                            Log.d(TAG, "Medicine bought successfully")
+                            showToast(R.string.medicine_bought_successfully)
+                        }
+                        .addOnFailureListener {
+                            Log.e(TAG, "Error buying medicine")
+                            showToast(R.string.error_buying_medicine)
+                        }
+                }.addOnFailureListener {
+                    Log.e(TAG, "Error buying medicine")
+                    showToast(R.string.error_buying_medicine)
+                }
+        } else {
+            db.collection("pharmacies").document(pharmacyName)
+                .collection("medicines")
+                .document(medicineName)
+                .update("stock", FieldValue.increment((-amount).toLong()))
+                .addOnSuccessListener {
+                    db.collection("medicines").document(medicineName)
+                        .collection("pharmacies")
+                        .document(pharmacyName)
+                        .update("stock", FieldValue.increment((-amount).toLong()))
+                        .addOnSuccessListener {
+                            Log.d(TAG, "Medicine bought successfully")
+                            showToast(R.string.medicine_bought_successfully)
+                        }
+                        .addOnFailureListener {
+                            Log.e(TAG, "Error buying medicine")
+                            showToast(R.string.error_buying_medicine)
+                        }
+                }.addOnFailureListener {
+                    Log.e(TAG, "Error buying medicine")
+                    showToast(R.string.error_buying_medicine)
+                }
         }
     }
 
