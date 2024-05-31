@@ -88,8 +88,10 @@ class BuyMedicineActivity : AppCompatActivity() {
             if (insertedStock > stock) {
                 showToast(R.string.not_enough_stock)
             }
-            else
+            else {
                 makePurchase(medicine.name!!, insertedStock)
+                finish()
+            }
         }
     }
 

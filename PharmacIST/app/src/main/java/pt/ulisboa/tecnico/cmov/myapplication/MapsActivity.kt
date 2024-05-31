@@ -57,7 +57,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     companion object{
         private const val LOCATION_REQUEST_CODE = 1
-        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

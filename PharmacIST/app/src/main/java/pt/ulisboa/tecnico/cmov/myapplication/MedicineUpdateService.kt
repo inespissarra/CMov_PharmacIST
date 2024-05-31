@@ -94,8 +94,8 @@ class MedicineUpdateService : Service() {
             .setContentTitle("Medicine Available")
             .setContentText("$medicineName is now available in $pharmacyName.")
             .setPriority(NotificationCompat.PRIORITY_HIGH) // High priority for heads-up notification
-            .setDefaults(NotificationCompat.DEFAULT_ALL) // Ensure the notification makes sound and shows up
-            .setAutoCancel(true) // Makes the notification dismissible when clicked
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setAutoCancel(true)
             .build()
 
         with(NotificationManagerCompat.from(this)) {
