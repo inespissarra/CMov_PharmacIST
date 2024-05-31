@@ -96,4 +96,5 @@
     <string name="barcode_doesnt_match_existent_stock">Código de barras: %1$s Código de barras nºao registado</string>
     <string name="register_new_medicine">Registar novo medicamento</string>
     <string name="image_name">" Nome: %1$s"</string>
+    <string name="closest_pharmacy">Farmácia mais próxima</string>
 </resources>

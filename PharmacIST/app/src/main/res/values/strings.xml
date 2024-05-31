@@ -105,5 +105,6 @@
     <string name="barcode_doesnt_match_existent_stock">Barcode: %1$s\nBarcode doesn\'t match existent stock</string>
     <string name="register_new_medicine">Register new medicine</string>
     <string name="image_name">" Name: %1$s"</string>
+    <string name="closest_pharmacy">Closest Pharmacy</string>
 
 </resources>

@@ -53,16 +53,19 @@ class AddMedicineActivity : AppCompatActivity() {
         val cameraButton: ImageButton = findViewById(R.id.cameraButton)
         cameraButton.setOnClickListener{
             if (checkCameraPermissions() || requestCameraPermissions()) pickImageCamera()
+            else showToast(R.string.camera_storage_permissions)
         }
 
         val photoField: TextView = findViewById(R.id.photoField)
         photoField.setOnClickListener {
             if (checkCameraPermissions() || requestCameraPermissions()) pickImageCamera()
+            else showToast(R.string.camera_storage_permissions)
         }
 
         val galleryButton: ImageButton = findViewById(R.id.galleryButton)
         galleryButton.setOnClickListener{
             if (checkStoragePermissions() || requestStoragePermissions()) pickImageGallery()
+            else showToast(R.string.storage_permissions)
         }
 
         nameText = findViewById(R.id.nameField)

@@ -1,12 +1,13 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
-import android.app.Activity
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
@@ -17,8 +18,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -28,7 +34,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -48,6 +53,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     private lateinit var mapSearchView: SearchView
     private lateinit var currentLocation: Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
     private lateinit var auth: FirebaseAuth
     private val markers = mutableListOf<Marker>()
 
@@ -140,6 +146,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                 override fun onFailure() {}
             })
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
 
@@ -288,6 +304,62 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         }
     }
 
+    private fun startLocationUpdates() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val locationRequest = LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                10000 // interval in milliseconds
+            ).apply {
+                setMinUpdateIntervalMillis(5000) // fastest interval in milliseconds
+            }.build()
+
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    locationResult.lastLocation?.let {
+                        currentLocation = it
+                        checkProximityToPharmacy()
+                    }
+                }
+            }
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        }
+    }
+
+    private fun checkProximityToPharmacy() {
+        val closestPharmacyButton: Button = findViewById(R.id.closestPharmacy)
+        val pharmacies = pharmacyRepository.getNearbyPharmacies(currentLocation.latitude, currentLocation.longitude, 0.01)
+        if(pharmacies.isNotEmpty()){
+            val pharmacy = pharmacies.first()
+            closestPharmacyButton.visibility = android.view.View.VISIBLE
+            closestPharmacyButton.setOnClickListener() {
+                showPharmacyInfoPanel(pharmacy)
+            }
+        } else {
+            closestPharmacyButton.visibility = android.view.View.INVISIBLE
+        }
+    }
+
+    private fun showPharmacyInfoPanel(pharmacy : PharmacyMetaData) {
+        val intent =
+            Intent(applicationContext, PharmacyInformationPanelActivity::class.java)
+        intent.putExtra("pharmacy", pharmacy)
+        startActivity(intent)
+    }
+
     private fun zoomOnMap(latLng: LatLng) {
         val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(latLng, 15f)
         mMap.animateCamera(newLatLngZoom)
@@ -304,10 +376,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
             if (pharmacyName!=null){
                 val pharmacy = pharmacyRepository.getPharmacy(pharmacyName)
                 if (pharmacy != null) {
-                    val intent =
-                        Intent(applicationContext, PharmacyInformationPanelActivity::class.java)
-                    intent.putExtra("pharmacy", pharmacy)
-                    startActivity(intent)
+                    showPharmacyInfoPanel(pharmacy)
                 }
             }
             false

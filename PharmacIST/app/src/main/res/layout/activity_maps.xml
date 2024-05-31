@@ -64,6 +64,24 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <Button
+        android:id="@+id/closestPharmacy"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="88dp"
+        android:adjustViewBounds="false"
+        android:background="@drawable/bottom_background"
+        android:contentDescription="@string/image"
+        android:scaleType="fitXY"
+        android:text="@string/closest_pharmacy"
+        android:textColor="?attr/button2TextColor"
+        android:textSize="10sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/bottomNavigationView"
+        app:layout_constraintEnd_toStartOf="@+id/addPharmacyButton"
+        app:layout_constraintHorizontal_bias="0.514"
+        app:layout_constraintStart_toEndOf="@+id/recenterButton" />
+
     <SearchView
         android:id="@+id/mapSearchView"
         android:layout_width="0dp"

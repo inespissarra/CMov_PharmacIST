@@ -59,31 +59,19 @@ class AddPharmacyActivity : AppCompatActivity() {
 
         val cameraButton: ImageButton = findViewById(R.id.cameraButton)
         cameraButton.setOnClickListener{
-            if(checkCameraPermissions()){
-                pickImageCamera()
-            }
-            else{
-                requestCameraPermissions()
-            }
+            if (checkCameraPermissions() || requestCameraPermissions()) pickImageCamera()
+            else showToast(R.string.camera_storage_permissions)
         }
 
         pharmacyPhotoName.setOnClickListener {
-            if(checkCameraPermissions()){
-                pickImageCamera()
-            }
-            else{
-                requestCameraPermissions()
-            }
+            if (checkCameraPermissions() || requestCameraPermissions()) pickImageCamera()
+            else showToast(R.string.camera_storage_permissions)
         }
 
         val galleryButton: ImageButton = findViewById(R.id.galleryButton)
         galleryButton.setOnClickListener{
-            if(checkStoragePermissions()){
-                pickImageGallery()
-            }
-            else{
-                requestStoragePermissions()
-            }
+            if (checkStoragePermissions() || requestStoragePermissions()) pickImageGallery()
+            else showToast(R.string.storage_permissions)
         }
 
         val registerButton: Button = findViewById(R.id.registerBtn)
@@ -246,10 +234,11 @@ class AddPharmacyActivity : AppCompatActivity() {
             android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
 
-    private fun requestCameraPermissions() {
+    private fun requestCameraPermissions(): Boolean {
         ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.CAMERA),
             CAMERA_REQUEST_CODE
         )
+        return checkCameraPermissions()
     }
 
     private fun checkStoragePermissions(): Boolean {
@@ -261,7 +250,7 @@ class AddPharmacyActivity : AppCompatActivity() {
                 android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun requestStoragePermissions() {
+    private fun requestStoragePermissions(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(this,
                 arrayOf(android.Manifest.permission.READ_MEDIA_IMAGES),
@@ -273,42 +262,8 @@ class AddPharmacyActivity : AppCompatActivity() {
                 STORAGE_REQUEST_CODE
             )
         }
+        return checkStoragePermissions()
     }
-
-   override fun onRequestPermissionsResult(
-       requestCode: Int,
-       permissions: Array<out String>,
-       grantResults: IntArray
-   ) {
-       super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-       when(requestCode){
-           CAMERA_REQUEST_CODE ->{
-               if(grantResults.isNotEmpty() && grantResults.size == 2){
-                   val cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED
-                   val storageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED
-
-                   if(cameraAccepted && storageAccepted){
-                       pickImageCamera()
-                   }
-                   else{
-                       showToast(R.string.camera_storage_permissions)
-                   }
-               }
-           }
-           STORAGE_REQUEST_CODE ->{
-               if(grantResults.isNotEmpty()){
-
-                   if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                       pickImageGallery()
-                   }
-                   else{
-                       showToast(R.string.storage_permissions)
-                   }
-               }
-           }
-       }
-   }
 
    private fun showToast(message: Int){
        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
