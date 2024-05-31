@@ -99,19 +99,40 @@ class BuyMedicineActivity : AppCompatActivity() {
                 showToast(R.string.error_buying_medicine)
 
             }
-        
-        db.collection("medicines").document(medicineName).collection("pharmacies").document(pharmacyName)
-            .update("stock", FieldValue.increment((-amount).toLong()))
-            .addOnSuccessListener {
-                Log.d(TAG, "Medicine bought successfully")
-                showToast(R.string.medicine_bought_successfully)
-                finish()
-            }
-            .addOnFailureListener {
-                Log.e(TAG, "Error buying medicine")
-                showToast(R.string.error_buying_medicine)
 
+        db.runTransaction { transaction ->
+            val medicineRef = db.collection("medicines")
+                .document(medicineName)
+                .collection("pharmacies")
+                .document(pharmacyName)
+
+            // Get the current stock value
+            val snapshot = transaction.get(medicineRef)
+            val currentStock = snapshot.getLong("stock") ?: throw Exception("Stock field missing")
+
+            // Calculate the new stock value
+            val newStock = currentStock - amount
+            if (newStock < 0) {
+                throw Exception("Not enough stock available")
             }
+
+            // Update the stock value
+            transaction.update(medicineRef, "stock", newStock)
+
+            // Return the new stock value
+
+            stock = newStock.toInt()
+            val stockAmountTextView: TextView = findViewById(R.id.stockAmount)
+            stockAmountTextView.text = stock.toString()
+            newStock
+        }.addOnSuccessListener { newStock ->
+            Log.d(TAG, "Medicine bought successfully, new stock: $newStock")
+            showToast(R.string.medicine_bought_successfully)
+            finish()
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "Error buying medicine", e)
+            showToast(R.string.error_buying_medicine)
+        }
     }
 
     private fun showToast(message: Int){
