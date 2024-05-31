@@ -66,6 +66,12 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_medicine_information_panel)
 
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
         recyclerView = findViewById(R.id.pharmacyList)
 
         val gridLayoutManager = GridLayoutManager(this@MedicineInformationPanelActivity, 1)
@@ -75,11 +81,7 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
         adapter.setPharmacyDataList(pharmacyList)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         val intentSender = intent.getStringExtra("sender")
         Log.d(TAG, "Received intent from $intentSender")
@@ -108,7 +110,6 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             else {
                 showToast(R.string.not_logged_in)
             }
-
         }
 
         adapter.onItemClick = {
@@ -117,8 +118,6 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             Log.d(TAG, "Sending intent with $it to PharmacyInformationPanelActivity")
             startActivity(intent)
         }
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
     private fun addToNotifications() {
