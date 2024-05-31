@@ -267,14 +267,37 @@ class ScanBarcodeActivity : AppCompatActivity() {
     }
 
     private fun addStockToMedicine(medicine: String, amount: Int) {
-        db.collection("medicines").document(medicine).collection("pharmacies").document(pharmacyName!!)
-            .update("stock", FieldValue.increment(amount.toLong()))
-            .addOnSuccessListener {
-                Log.d(TAG, "stock added successfully in medicines")
+        val stockRef = db.collection("medicines").document(medicine).collection("pharmacies").document(pharmacyName!!)
+        stockRef.get()
+            .addOnSuccessListener {  document ->
+                if (document.exists()) {
+                    stockRef.update("stock", FieldValue.increment(amount.toLong()))
+                        .addOnSuccessListener {
+                            Log.d(TAG, "stock added successfully in medicines/pharmacies")
+                        }
+                        .addOnFailureListener {
+                            Log.e(TAG, "stock addition failed in medicines/pharmacies")
+                        }
+                }
+                else {
+                    val stock = hashMapOf(
+                        "name" to pharmacy.name,
+                        "locationName" to pharmacy.locationName,
+                        "longitude" to pharmacy.longitude,
+                        "latitude" to pharmacy.latitude,
+                        "picture" to pharmacy.picture,
+                        "stock" to amount
+                    )
+                    stockRef.set(stock)
+                        .addOnSuccessListener {
+                        }
+                        .addOnFailureListener {
+                            Log.e(TAG, "Error adding stock to medicine/pharmacies")
+                            showToast(R.string.something_went_wrong)
+                        }
+                }
             }
-            .addOnFailureListener {
-                Log.e(TAG, "stock addition failed in medicines")
-            }
+
     }
 
     private fun addStockToPharmacy(medicine: MedicineMetaData, amount: Int) {
