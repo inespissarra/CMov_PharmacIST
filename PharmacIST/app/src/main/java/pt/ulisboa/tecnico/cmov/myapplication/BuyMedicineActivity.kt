@@ -95,9 +95,8 @@ class BuyMedicineActivity : AppCompatActivity() {
 
     private fun makePurchase(medicineName: String, amount: Int) {
         Log.d(TAG, "pharmacy name: $pharmacyName\nmedicine name: $medicineName")
-        // Trade parallelism of queries to ensure both are done or neither are
 
-        // Delete medicine instead
+        // Delete medicine instead if stock reaches 0
         if (stock - amount == 0) {
             db.collection("pharmacies").document(pharmacyName)
                 .collection("medicines")

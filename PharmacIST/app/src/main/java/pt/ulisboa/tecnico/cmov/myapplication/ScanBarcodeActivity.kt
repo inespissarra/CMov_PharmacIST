@@ -45,6 +45,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
     private lateinit var pharmacy: PharmacyMetaData
     private var db: FirebaseFirestore = Firebase.firestore
 
+    @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scan_barcode)
@@ -103,8 +104,8 @@ class ScanBarcodeActivity : AppCompatActivity() {
                 if (!documents.isEmpty) {
                     // if there is a medicine with such barcode
                     medicine = documents.documents[0].toObject(MedicineMetaData::class.java)!!
-                    resultText.text = "Barcode: $barcode\nBarcode matches existent stock"
-                    addRegisterButton.text = "Add stock to medicine"
+                    resultText.text = getString(R.string.barcode_matches_existent_stock, barcode)
+                    addRegisterButton.text = getString(R.string.add_stock_to_medicine)
                     addRegisterButton.setOnClickListener {
                         addAmountDialog(medicine, object: AddAmountCallback{
                             override fun onSuccess(){
@@ -115,8 +116,9 @@ class ScanBarcodeActivity : AppCompatActivity() {
                     }
                 }
                 else {
-                    resultText.text = "Barcode: $barcode\nBarcode doesn't match existent stock"
-                    addRegisterButton.text = "Register new medicine"
+                    resultText.text =
+                        getString(R.string.barcode_doesnt_match_existent_stock, barcode)
+                    addRegisterButton.text = getString(R.string.register_new_medicine)
                     addRegisterButton.setOnClickListener {
                         val intent = Intent(this, AddMedicineActivity::class.java)
                         intent.putExtra("pharmacy", pharmacy)
@@ -225,7 +227,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                     pickImageCamera()
-                else showToast(R.string.camera_storage_permissions)
+                else showToast(R.string.camera_permissions)
             }
             STORAGE_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
@@ -236,7 +238,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
     }
 
     private fun addAmountDialog(medicine: MedicineMetaData, callback: AddAmountCallback) {
-        var amount : Int? = null
+        var amount : Int?
         val inflater = layoutInflater
         val dialogLayout = inflater.inflate(R.layout.amount_dialog_box_layout, null)
         val editText = dialogLayout.findViewById<EditText>(R.id.amount_editText)
@@ -244,13 +246,13 @@ class ScanBarcodeActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setTitle("For medicine $medicine")
             .setView(dialogLayout)
-            .setPositiveButton("OK") { dialog, which ->
+            .setPositiveButton("OK") { _, _ ->
                 amount = editText.text.toString().toInt()
                 addStockToPharmacy(medicine, amount!!)
                 addStockToMedicine(medicine.name!!, amount!!)
                 callback.onSuccess()
             }
-            . setNegativeButton("Cancel") { dialog, which ->
+            . setNegativeButton("Cancel") { dialog, _ ->
                 Log.d(TAG, "Cancel button clicked")
                 dialog.dismiss()
                 callback.onFailure()

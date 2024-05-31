@@ -72,6 +72,7 @@
     <string name="pharmacy_registered">Pharmacy registered successfully</string>
     <string name="error_registering_pharmacy">Error registering pharmacy</string>
     <string name="error_uploading_image">Error uploading the image</string>
+    <string name="camera_permissions">Camera permissions are required</string>
     <string name="camera_storage_permissions">Camera and Storage permissions are required</string>
     <string name="storage_permissions">Storage permission are required</string>
     <string name="not_enough_stock">There is not enough stock</string>
@@ -99,5 +100,9 @@
     <string name="not_found_in_any_pharmacy">Not found in any pharmacy</string>
     <string name="medicine_description">MedicineDescription</string>
     <string name="description_not_found">Description not found</string>
+    <string name="barcode_matches_existent_stock">Barcode: %1$s Barcode matches existent stock</string>
+    <string name="add_stock_to_medicine">Add stock to medicine</string>
+    <string name="barcode_doesnt_match_existent_stock">Barcode: %1$s\nBarcode doesn\'t match existent stock</string>
+    <string name="register_new_medicine">Register new medicine</string>
 
 </resources>
