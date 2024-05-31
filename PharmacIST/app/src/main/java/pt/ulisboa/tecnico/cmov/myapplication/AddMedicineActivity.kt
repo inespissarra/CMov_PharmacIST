@@ -111,8 +111,6 @@ class AddMedicineActivity : AppCompatActivity() {
         db.collection("medicines").document(medicineName)
             .set(medicine)
             .addOnSuccessListener {
-                Log.d(TAG, "Medicine registered successfully")
-                showToast(R.string.medicine_registered)
             }
             .addOnFailureListener {
                 Log.e(TAG, "Error registering medicine")
