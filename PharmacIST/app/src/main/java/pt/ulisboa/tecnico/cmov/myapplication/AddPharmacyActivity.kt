@@ -53,9 +53,9 @@ class AddPharmacyActivity : AppCompatActivity() {
         setContentView(R.layout.activity_add_pharmacy)
 
         pharmacyPhoto = findViewById(R.id.photo)
-        pharmacyPhotoName = findViewById<TextView>(R.id.photoField)!!
-        pharmacyLocationName = findViewById<TextView>(R.id.addressField)!!
-        pharmacyName = findViewById<EditText>(R.id.nameField)!!
+        pharmacyPhotoName = findViewById(R.id.photoField)!!
+        pharmacyLocationName = findViewById(R.id.addressField)!!
+        pharmacyName = findViewById(R.id.nameField)!!
 
         val cameraButton: ImageButton = findViewById(R.id.cameraButton)
         cameraButton.setOnClickListener{
@@ -67,8 +67,7 @@ class AddPharmacyActivity : AppCompatActivity() {
             }
         }
 
-        val photoField: TextView = findViewById(R.id.photoField)
-        photoField.setOnClickListener {
+        pharmacyPhotoName.setOnClickListener {
             if(checkCameraPermissions()){
                 pickImageCamera()
             }
@@ -92,8 +91,7 @@ class AddPharmacyActivity : AppCompatActivity() {
             registerPharmacy()
         }
 
-        val locationEdit: TextView = findViewById(R.id.addressField)
-        locationEdit.setOnClickListener{
+        pharmacyLocationName.setOnClickListener{
             selectLocation()
         }
     }
@@ -119,7 +117,7 @@ class AddPharmacyActivity : AppCompatActivity() {
             val lng = data.getDoubleExtra("longitude", Double.MIN_VALUE)
             pharmacyLocation = LatLng(lat, lng)
             val name  = data.getStringExtra("name")
-            pharmacyLocationName.setText("$name")
+            pharmacyLocationName.text = "$name"
             locationSelected = 1
         }
         else{
@@ -149,7 +147,7 @@ class AddPharmacyActivity : AppCompatActivity() {
                     db.collection("pharmacies").document(name)
                         .set(pharmacy)
                         .addOnSuccessListener { showToast(R.string.pharmacy_registered) }
-                        .addOnFailureListener { e -> showToast(R.string.error_registering_pharmacy) }
+                        .addOnFailureListener { showToast(R.string.error_registering_pharmacy) }
                     finish()
                 }
                 override fun onFailure(exception: Exception) {
@@ -165,11 +163,11 @@ class AddPharmacyActivity : AppCompatActivity() {
     private fun uploadImage(name: String, callback: UploadCallback) {
         storage = FirebaseStorage.getInstance()
         val storageReference = storage.reference
-        val imageRef = storageReference.child("pharmacies/$name.jpg");
+        val imageRef = storageReference.child("pharmacies/$name.jpg")
         val uploadTask = imageRef.putFile(imageUri!!)
 
         // Listen for success or failure
-        uploadTask.addOnSuccessListener { taskSnapshot ->
+        uploadTask.addOnSuccessListener {
             // Handle successful upload
             imageRef.downloadUrl.addOnSuccessListener { uri ->
                 val downloadUrl = uri.toString()
@@ -211,7 +209,7 @@ class AddPharmacyActivity : AppCompatActivity() {
             pharmacyPhoto.setImageURI(imageUri)
 
             val name = imageUri?.path?.substringAfterLast('/', "")
-            pharmacyPhotoName.setText(" Name: $name")
+            pharmacyPhotoName.text = getString(R.string.image_name, name)
         }
         else{
             showToast(R.string.canceled)
@@ -236,7 +234,7 @@ class AddPharmacyActivity : AppCompatActivity() {
             pharmacyPhoto.setImageURI(imageUri)
 
             val name = imageUri?.path?.substringAfterLast('/', "")
-            pharmacyPhotoName.setText(" Name: $name")
+            pharmacyPhotoName.text = getString(R.string.image_name, name)
         }
         else{
             showToast(R.string.canceled)
@@ -286,7 +284,7 @@ class AddPharmacyActivity : AppCompatActivity() {
 
        when(requestCode){
            CAMERA_REQUEST_CODE ->{
-               if(grantResults.isNotEmpty()){
+               if(grantResults.isNotEmpty() && grantResults.size == 2){
                    val cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED
                    val storageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED
 

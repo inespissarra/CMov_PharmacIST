@@ -104,5 +104,6 @@
     <string name="add_stock_to_medicine">Add stock to medicine</string>
     <string name="barcode_doesnt_match_existent_stock">Barcode: %1$s\nBarcode doesn\'t match existent stock</string>
     <string name="register_new_medicine">Register new medicine</string>
+    <string name="image_name">" Name: %1$s"</string>
 
 </resources>

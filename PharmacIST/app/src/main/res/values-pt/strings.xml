@@ -92,8 +92,8 @@
     <string name="description_not_found">Descrição não encontrada</string>
     <string name="camera_permissions">São necessárias permissões de câmara</string>
     <string name="barcode_matches_existent_stock">Código de barras: %1$s Código de barras já registado</string>
-    <string name="barcode_matches_existent_stock">Barcode: %1$s Barcode matches existent stock</string>
     <string name="add_stock_to_medicine">Adicionar inventário ao medicamento</string>
     <string name="barcode_doesnt_match_existent_stock">Código de barras: %1$s Código de barras nºao registado</string>
     <string name="register_new_medicine">Registar novo medicamento</string>
+    <string name="image_name">" Nome: %1$s"</string>
 </resources>
