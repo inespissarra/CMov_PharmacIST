@@ -110,6 +110,8 @@
     <string name="notification_service_content">Listening for medicine availability updates.</string>
     <string name="notification_title">Medicine Available</string>
     <string name="notification_content">is now available in</string>
+    <string name="see_original_text">see original</string>
+    <string name="see_translated_text">see translated</string>
     <string name="input_must_be_number">Input must be a number</string>
     <string name="stock_added_successfully">Stock added successfully</string>
     <string name="resulting_stock_negative">Resulting stock cannot be negative</string>

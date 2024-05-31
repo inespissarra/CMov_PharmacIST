@@ -101,6 +101,8 @@
     <string name="notification_service_content">À escuta de atualizações da disponibilidade de medicamento</string>
     <string name="notification_title">Medicamento Disponível</string>
     <string name="notification_content">já está disponível em</string>
+    <string name="see_original_text">ver original</string>
+    <string name="see_translated_text">ver traduzido</string>
     <string name="input_must_be_number">Input tem de ser um número</string>
     <string name="stock_added_successfully">Inventário adicionado com sucesso</string>
     <string name="resulting_stock_negative">O inventário resultante não pode ser negativo</string>

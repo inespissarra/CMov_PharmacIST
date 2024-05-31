@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -28,6 +29,12 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.Translation
+import com.google.mlkit.nl.translate.Translator
+import com.google.mlkit.nl.translate.TranslatorOptions
+import java.util.Locale
 import kotlin.math.max
 
 class MedicineInformationPanelActivity : AppCompatActivity() {
@@ -52,12 +59,15 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
     private var pharmacyList: ArrayList<Pair<PharmacyMetaData, Pair<Double, Int>>> = ArrayList()
     private var medicineEntry: MedicinePharmacyDBEntryData? = null
     private var medicine: MedicineMetaData? = null
+    private var originalDescription: String? = null
+    private var translatedDescription: String? = null
     private var userLatitude: Double = 0.0
     private var userLongitude: Double = 0.0
     private var createDone: Boolean = false
+    private lateinit var targetLanguage: String
+    private var isShowingTranslatedText: Boolean = false
 
     private lateinit var medicineWithNotificationRepository : MedicineWithNotificationRepository
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +90,8 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         adapter = ListPharmacyAdapter(this, pharmacyList)
         recyclerView.adapter = adapter
         adapter.setPharmacyDataList(pharmacyList)
+
+        targetLanguage = Locale.getDefault().language
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -226,7 +238,14 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         Glide.with(this@MedicineInformationPanelActivity).load(medicineMetaData.image).into(medicineImageView)
 
         if (medicineMetaData.description != null) {
-            medicineDescriptionView.text = medicineMetaData.description
+            originalDescription = medicineMetaData.description
+            if (targetLanguage == "en") {
+                medicineDescriptionView.text = medicineMetaData.description
+            }
+            else{
+                translateText(originalDescription!!, targetLanguage)
+            }
+
         } else {
             medicineDescriptionView.text = this.getString(R.string.description_not_found)
         }
@@ -340,6 +359,56 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             medicine = medicineEntry?.medicineMetaData
             loadData()
         }
+    }
+
+    private fun toggleTranslation() {
+        val toggleTranslationView = findViewById<TextView>(R.id.toggle_translation)
+        toggleTranslationView.visibility = View.VISIBLE
+        toggleTranslationView.isClickable = true
+        toggleTranslationView.setOnClickListener {
+            if (isShowingTranslatedText) {
+                medicineDescriptionView.text = originalDescription
+                toggleTranslationView.text = getString(R.string.see_translated_text)
+            }
+            else {
+                medicineDescriptionView.text = translatedDescription
+                toggleTranslationView.text = getString(R.string.see_original_text)
+            }
+            isShowingTranslatedText = !isShowingTranslatedText
+        }
+    }
+
+    private fun translateText(text: String, targetLanguage: String) {
+
+        // Create an options object for the translator
+        val options = TranslatorOptions.Builder()
+            .setSourceLanguage(TranslateLanguage.ENGLISH) // Source language: English
+            .setTargetLanguage(targetLanguage) // Target language
+            .build()
+
+        // Get a translator instance
+        val translator: Translator = Translation.getClient(options)
+
+        val conditions = DownloadConditions.Builder()
+            .requireWifi()
+            .build()
+
+        translator.downloadModelIfNeeded(conditions)
+            .addOnSuccessListener {
+                translator.translate(text)
+                    .addOnSuccessListener { translatedText ->
+                        medicineDescriptionView.text = translatedText
+                        translatedDescription = translatedText
+                        isShowingTranslatedText = true
+                        toggleTranslation()
+                    }
+                    .addOnFailureListener {
+                        showToast(R.string.something_went_wrong)
+                    }
+            }
+            .addOnFailureListener {
+                Log.w(TAG, "failed to download model")
+            }
     }
 
     private fun showToast(message: Int){
