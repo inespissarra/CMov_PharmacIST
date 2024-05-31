@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -92,9 +93,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                 override fun onSuccess() {
                     getMedicinesWithNotifications(object : getMedicinesWithNotificationsCallback{
                         override fun onSuccess() {
-                            if (checkNotificationPermission() || requestNotificationPermission()) {
-                                startForegroundService(serviceIntent)
-                            }
+                            checkNotificationPermission()
+                            startForegroundService(serviceIntent)
                         }
 
                         override fun onFailure() {}
@@ -108,28 +108,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         Log.d(TAG, "Finished onCreate")
     }
 
-    private fun checkNotificationPermission() :Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            return ActivityCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        } else {
-            return true
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission is granted. You can now show notifications.
+            } else {
+                // Permission is denied. Handle the lack of permission appropriately.
+                Log.w(TAG, "permission requires")
+            }
         }
-    }
-    private fun requestNotificationPermission() :Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.requestPermissions(
-                this as Activity,
-                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-                NOTIFICATION_PERMISSION_REQUEST_CODE
-            )
-            return checkNotificationPermission()
-        }
-        return true
-    }
 
+    private fun checkNotificationPermission() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // Request the permission
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
 
     override fun onResume() {
         super.onResume()
