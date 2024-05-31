@@ -67,8 +67,8 @@ class MedicineUpdateService : Service() {
 
     private fun createNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Medicine Availability Service")
-            .setContentText("Listening for medicine availability updates.")
+            .setContentTitle(getString(R.string.notification_service_title))
+            .setContentText(getString(R.string.notification_service_content))
             .setSmallIcon(R.drawable.baseline_notifications_24)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
@@ -91,8 +91,8 @@ class MedicineUpdateService : Service() {
     private fun sendNotification(medicineName: String, pharmacyName:String) {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.baseline_notifications_24)
-            .setContentTitle("Medicine Available")
-            .setContentText("$medicineName is now available in $pharmacyName.")
+            .setContentTitle(getString(R.string.notification_title))
+            .setContentText("$medicineName " + getString(R.string.notification_content) + " $pharmacyName.")
             .setPriority(NotificationCompat.PRIORITY_HIGH) // High priority for heads-up notification
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(true)

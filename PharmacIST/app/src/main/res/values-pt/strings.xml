@@ -97,4 +97,9 @@
     <string name="register_new_medicine">Registar novo medicamento</string>
     <string name="image_name">" Nome: %1$s"</string>
     <string name="closest_pharmacy">Farmácia mais próxima</string>
+    <string name="notification_service_title">Serviço de Disponibilidade de Medicamento</string>
+    <string name="notification_service_content">À escuta de atualizações da disponibilidade de medicamento</string>
+    <string name="notification_title">Medicamento Disponível</string>
+    <string name="notification_content">já está disponível em</string>
+
 </resources>

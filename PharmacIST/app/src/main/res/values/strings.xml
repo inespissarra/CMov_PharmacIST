@@ -106,5 +106,9 @@
     <string name="register_new_medicine">Register new medicine</string>
     <string name="image_name">" Name: %1$s"</string>
     <string name="closest_pharmacy">Closest Pharmacy</string>
+    <string name="notification_service_title">Medicine Availability Service</string>
+    <string name="notification_service_content">Listening for medicine availability updates.</string>
+    <string name="notification_title">Medicine Available</string>
+    <string name="notification_content">is now available in</string>
 
 </resources>
