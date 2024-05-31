@@ -45,6 +45,7 @@ class MedicineActivity : AppCompatActivity() {
     private var hasMoreData: Boolean = true
     private var inSearch: Boolean = false
     private var prevQuerySize: Int = 0
+    private var createDone: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +103,7 @@ class MedicineActivity : AppCompatActivity() {
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
+                Log.d(TAG, "Scrolled, end=${!recyclerView.canScrollVertically(1)}, isLoading=$isLoading, inSearch=$inSearch, hasMoreData=$hasMoreData")
                 if (!recyclerView.canScrollVertically(1) && !isLoading && !inSearch && hasMoreData) {
                     Log.d(TAG, "Loading more data, since we reached the bottom")
                     loadData()
@@ -113,7 +115,16 @@ class MedicineActivity : AppCompatActivity() {
 
         getUserLocationAndLoadData()
 
+        createDone = true
         Log.d(TAG, "onCreate finished")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume started")
+        if (!createDone) refreshData()
+        createDone = false
+        Log.d(TAG, "onResume finished")
     }
 
     override fun onRequestPermissionsResult(
@@ -132,6 +143,19 @@ class MedicineActivity : AppCompatActivity() {
                 else showToast(R.string.error_verifying_location)
             }
         }
+    }
+
+    private fun refreshData() {
+        Log.d(TAG, "Refreshing data")
+        lastFetch = null
+        medicineList.clear()
+        filteredList.clear()
+        indexMap.clear()
+        hasMoreData = true
+
+        Log.d(TAG, "Loading data")
+        loadData(inSearch)
+        Log.d(TAG, "Data refreshed")
     }
 
     private fun checkLocationPermission() : Boolean {
@@ -161,7 +185,7 @@ class MedicineActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadData() {
+    private fun loadData(resume: Boolean = false) {
         Log.d(TAG, "Loading data from DB")
         isLoading = true
 
@@ -226,8 +250,13 @@ class MedicineActivity : AppCompatActivity() {
                         item.closestDistance = String.format(Locale.US, "%.1f", item.closestPharmacy!!
                             .getDistance(currentLocation!!.latitude, currentLocation!!.longitude)).toDouble()
                         Log.d(TAG, "loadData - Closest pharmacy to ${item.medicineMetaData?.name} is ${item.closestDistance} meters away")
+                        //adapter.notifyItemChanged(indexMap[item.medicineMetaData?.name]!!)
                     }
-                    adapter.notifyItemChanged(indexMap[item.medicineMetaData?.name]!!)
+                    if (document == documents.documents[documents.documents.size - 1]) {
+                        Log.d(TAG, "Final medicineList after load=$medicineList")
+                        adapter.notifyDataSetChanged()
+                        if (resume) searchMedicine(searchView.query.toString(), true)
+                    }
                 }.addOnFailureListener {
                     Log.e(TAG, "loadData - Error loading pharmacies for medicine ${item.medicineMetaData?.name}, error=$it")
                 }
@@ -244,7 +273,7 @@ class MedicineActivity : AppCompatActivity() {
 
     private fun searchMedicine(query: String?, new: Boolean) {
         filteredList.clear()
-        if (query != null) {
+        if (!query.isNullOrEmpty()) {
             inSearch = true
             Log.d(TAG, "searchMedicine - Searching medicine for query=$query, new=$new")
 
@@ -281,7 +310,18 @@ class MedicineActivity : AppCompatActivity() {
                                 }
                             } else continue
 
-                            document.reference.collection("pharmacies").get()
+                            val secondQuery = if (currentLocation == null) {
+                                document.reference.collection("pharmacies")
+                            } else {
+                                document.reference.collection("pharmacies")
+                                    .whereGreaterThan("stock", 0)
+                                    .whereGreaterThan("latitude", currentLocation!!.latitude - 0.3)
+                                    .whereLessThan("latitude", currentLocation!!.latitude + 0.3)
+                                    .whereGreaterThan("longitude", currentLocation!!.longitude - 0.3)
+                                    .whereLessThan("longitude", currentLocation!!.longitude + 0.3)
+                            }
+
+                            secondQuery.get()
                                 .addOnSuccessListener { pharmacies ->
                                     for (pharmacyDoc in pharmacies) {
                                         val pharmacyData = pharmacyDoc.toObject(PharmacyMetaData::class.java)

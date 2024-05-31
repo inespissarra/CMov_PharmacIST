@@ -28,12 +28,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.mlkit.common.model.DownloadConditions
-import com.google.mlkit.nl.translate.TranslateLanguage
-import com.google.mlkit.nl.translate.Translation
-import com.google.mlkit.nl.translate.Translator
-import com.google.mlkit.nl.translate.TranslatorOptions
-import java.util.Locale
+import kotlin.math.max
 
 class MedicineInformationPanelActivity : AppCompatActivity() {
 
@@ -59,7 +54,7 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
     private var medicine: MedicineMetaData? = null
     private var userLatitude: Double = 0.0
     private var userLongitude: Double = 0.0
-    private lateinit var targetLanguage: String
+    private var createDone: Boolean = false
 
     private lateinit var medicineWithNotificationRepository : MedicineWithNotificationRepository
 
@@ -67,6 +62,8 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        Log.d(TAG, "onCreate started")
         setContentView(R.layout.activity_medicine_information_panel)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -83,8 +80,6 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         adapter = ListPharmacyAdapter(this, pharmacyList)
         recyclerView.adapter = adapter
         adapter.setPharmacyDataList(pharmacyList)
-
-        targetLanguage = Locale.getDefault().language
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -123,6 +118,21 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             Log.d(TAG, "Sending intent with $it to PharmacyInformationPanelActivity")
             startActivity(intent)
         }
+
+        createDone = true
+        Log.d(TAG, "onCreate finished")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume started")
+        if (!createDone) {
+            Log.d(TAG, "onResume - Updating dataset")
+            if (medicine == null) medicine = medicineEntry!!.medicineMetaData
+            loadData(true)
+        }
+        createDone = false
+        Log.d(TAG, "onResume finished")
     }
 
     private fun addToNotifications() {
@@ -216,50 +226,10 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         Glide.with(this@MedicineInformationPanelActivity).load(medicineMetaData.image).into(medicineImageView)
 
         if (medicineMetaData.description != null) {
-            if (targetLanguage == "en") {
-                medicineDescriptionView.text = medicineMetaData.description
-            }
-            else{
-                translateText(medicineMetaData.description!!, targetLanguage)
-            }
-
+            medicineDescriptionView.text = medicineMetaData.description
         } else {
             medicineDescriptionView.text = this.getString(R.string.description_not_found)
         }
-    }
-
-    private fun translateText(text: String, targetLanguage: String) {
-
-        // Create an options object for the translator
-        val options = TranslatorOptions.Builder()
-            .setSourceLanguage(TranslateLanguage.ENGLISH) // Source language: English
-            .setTargetLanguage(targetLanguage) // Target language
-            .build()
-
-        // Get a translator instance
-        val translator: Translator = Translation.getClient(options)
-
-        var conditions = DownloadConditions.Builder()
-            .requireWifi()
-            .build()
-
-        translator.downloadModelIfNeeded(conditions)
-            .addOnSuccessListener {
-                // Model downloaded successfully. Okay to start translating.
-                // (Set a flag, unhide the translation UI, etc.)
-                translator.translate(text)
-                    .addOnSuccessListener { translatedText ->
-                        Log.d(TAG, "text before translating: " + text + "\ntext after translating: " + translatedText)
-                        medicineDescriptionView.text = translatedText
-                    }
-                    .addOnFailureListener { exception ->
-                        // Error.
-                        // ...
-                    }
-            }
-            .addOnFailureListener {
-                Log.w(TAG, "failed to download model")
-            }
     }
 
     @Suppress("DEPRECATION")
@@ -286,7 +256,7 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadData() {
+    private fun loadData(resume: Boolean = false) {
         if (medicine == null) {
             Log.e(TAG, "loadData - Medicine is null")
             if (medicineEntry != null) {
@@ -315,6 +285,8 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
 
         Log.d(TAG, "Starting query")
         query.get().addOnSuccessListener { documents ->
+            val initialSize = pharmacyList.size
+            if (resume) pharmacyList.clear()
 
             Log.d(TAG, "Documents: ${documents.documents}")
 
@@ -327,8 +299,12 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
                 pharmacyList.add(Pair(pharmacyMetaData,
                     Pair(pharmacyMetaData.getDistance(userLatitude, userLongitude), stock)))
             }
+            val sortedList = pharmacyList.sortedBy { it.second.first }
+            pharmacyList.clear()
+            pharmacyList.addAll(sortedList)
             Log.d(TAG, "Finished loading data from DB, pharmacyList=$pharmacyList")
-            adapter.notifyItemRangeChanged(0, pharmacyList.size)
+            Log.d(TAG, "Notifying change from 0 to ${max(initialSize, pharmacyList.size)}")
+            adapter.notifyItemRangeChanged(0, max(initialSize, pharmacyList.size))
         }.addOnFailureListener {
             Log.e(TAG, "Error loading data from DB, error=$it")
             Toast.makeText(this, R.string.error_loading_data, Toast.LENGTH_SHORT).show()
