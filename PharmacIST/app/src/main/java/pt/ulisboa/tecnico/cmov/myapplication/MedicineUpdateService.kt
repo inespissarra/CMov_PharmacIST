@@ -42,7 +42,7 @@ class MedicineUpdateService : Service() {
         Log.d("MedicineUpdateService", "coisass ***")
         super.onCreate()
         createNotificationChannel()
-        //checkAndRequestNotificationPermission()
+        checkAndRequestNotificationPermission()
         startForeground(NOTIFICATION_ID, createNotification())
 
         addCollection()
@@ -113,21 +113,21 @@ class MedicineUpdateService : Service() {
         }
     }
 
-    //private fun checkAndRequestNotificationPermission() {
-    //    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    //        if (ActivityCompat.checkSelfPermission(
-    //                this,
-    //                Manifest.permission.POST_NOTIFICATIONS
-    //            ) != PackageManager.PERMISSION_GRANTED
-    //        ) {
-    //            ActivityCompat.requestPermissions(
-    //                this as Activity,
-    //                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-    //                NOTIFICATION_PERMISSION_REQUEST_CODE
-    //            )
-    //        }
-    //    }
-    //}
+    private fun checkAndRequestNotificationPermission() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this as Activity,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
 
     private fun addCollectionListener(medicineName: String, pharmacyName: String){
         val listenerRegistration = db.collection("medicines")
