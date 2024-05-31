@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Minha Aplicação</string>
+    <string name="app_name">PharmacIST</string>
+    <string name="application" translatable="false">PharmacIST</string>
     <string name="title_activity_maps">AtividadeMapas</string>
     <string name="map">Mapa</string>
     <string name="medicine">Medicamento</string>
