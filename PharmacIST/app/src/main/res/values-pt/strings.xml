@@ -101,5 +101,7 @@
     <string name="notification_service_content">À escuta de atualizações da disponibilidade de medicamento</string>
     <string name="notification_title">Medicamento Disponível</string>
     <string name="notification_content">já está disponível em</string>
+    <string name="see_original_text">ver original</string>
+    <string name="see_translated_text">ver traduzido</string>
 
 </resources>

@@ -55,6 +55,17 @@
                         app:layout_constraintTop_toBottomOf="@+id/pharmacyImage" />
 
                     <TextView
+                        android:id="@+id/purposeText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginStart="32dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:text="Purpose"
+                        android:textSize="20sp"
+                        android:textStyle="italic" />
+
+                    <TextView
                         android:id="@+id/medicineDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -64,6 +75,15 @@
                         android:textSize="16sp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/pharmacyName" />
+
+                    <TextView
+                        android:id="@+id/toggle_translation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/see_original_text"
+                        android:textColor="?attr/iconColor"
+                        android:visibility="invisible"
+                        android:layout_marginStart="32dp" />
 
                 </LinearLayout>
 
@@ -94,7 +114,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:text="@string/available_in"
                 android:textSize="20sp"
                 android:textStyle="italic"

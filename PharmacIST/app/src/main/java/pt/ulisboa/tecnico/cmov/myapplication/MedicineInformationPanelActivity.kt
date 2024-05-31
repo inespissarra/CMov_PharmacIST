@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -57,12 +58,14 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
     private var pharmacyList: ArrayList<Pair<PharmacyMetaData, Pair<Double, Int>>> = ArrayList()
     private var medicineEntry: MedicinePharmacyDBEntryData? = null
     private var medicine: MedicineMetaData? = null
+    private var originalDescription: String? = null
+    private var translatedDescription: String? = null
     private var userLatitude: Double = 0.0
     private var userLongitude: Double = 0.0
     private lateinit var targetLanguage: String
+    private var isShowingTranslatedText: Boolean = false
 
     private lateinit var medicineWithNotificationRepository : MedicineWithNotificationRepository
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -216,15 +219,33 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         Glide.with(this@MedicineInformationPanelActivity).load(medicineMetaData.image).into(medicineImageView)
 
         if (medicineMetaData.description != null) {
+            originalDescription = medicineMetaData.description
             if (targetLanguage == "en") {
                 medicineDescriptionView.text = medicineMetaData.description
             }
             else{
-                translateText(medicineMetaData.description!!, targetLanguage)
+                translateText(originalDescription!!, targetLanguage)
             }
 
         } else {
             medicineDescriptionView.text = this.getString(R.string.description_not_found)
+        }
+    }
+
+    private fun toggleTranslation() {
+        val toggleTranslationView = findViewById<TextView>(R.id.toggle_translation)
+        toggleTranslationView.visibility = View.VISIBLE
+        toggleTranslationView.isClickable = true
+        toggleTranslationView.setOnClickListener {
+            if (isShowingTranslatedText) {
+                medicineDescriptionView.text = originalDescription
+                toggleTranslationView.text = getString(R.string.see_translated_text)
+            }
+            else {
+                medicineDescriptionView.text = translatedDescription
+                toggleTranslationView.text = getString(R.string.see_original_text)
+            }
+            isShowingTranslatedText = !isShowingTranslatedText
         }
     }
 
@@ -239,22 +260,21 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         // Get a translator instance
         val translator: Translator = Translation.getClient(options)
 
-        var conditions = DownloadConditions.Builder()
+        val conditions = DownloadConditions.Builder()
             .requireWifi()
             .build()
 
         translator.downloadModelIfNeeded(conditions)
             .addOnSuccessListener {
-                // Model downloaded successfully. Okay to start translating.
-                // (Set a flag, unhide the translation UI, etc.)
                 translator.translate(text)
                     .addOnSuccessListener { translatedText ->
-                        Log.d(TAG, "text before translating: " + text + "\ntext after translating: " + translatedText)
                         medicineDescriptionView.text = translatedText
+                        translatedDescription = translatedText
+                        isShowingTranslatedText = true
+                        toggleTranslation()
                     }
-                    .addOnFailureListener { exception ->
-                        // Error.
-                        // ...
+                    .addOnFailureListener {
+                        showToast(R.string.something_went_wrong)
                     }
             }
             .addOnFailureListener {

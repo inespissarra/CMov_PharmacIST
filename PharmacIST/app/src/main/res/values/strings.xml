@@ -110,5 +110,7 @@
     <string name="notification_service_content">Listening for medicine availability updates.</string>
     <string name="notification_title">Medicine Available</string>
     <string name="notification_content">is now available in</string>
+    <string name="see_original_text">see original</string>
+    <string name="see_translated_text">see translated</string>
 
 </resources>
