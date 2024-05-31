@@ -35,9 +35,9 @@ class BuyMedicineActivity : AppCompatActivity() {
         Log.d(TAG, "onCreate finished")
     }
 
+    @Suppress("DEPRECATION")
     private fun createView() {
-        medicine = intent.getParcelableExtra<MedicineMetaData>("medicine")!!
-        // stock = intent.getIntExtra("stock", 0)
+        medicine = intent.getParcelableExtra("medicine")!!
         pharmacyName = intent.getStringExtra("pharmacyName")!!
 
         // NAME
