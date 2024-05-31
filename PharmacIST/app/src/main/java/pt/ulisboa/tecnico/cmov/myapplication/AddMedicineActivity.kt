@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 
 class AddMedicineActivity : AppCompatActivity() {
 
@@ -80,7 +81,8 @@ class AddMedicineActivity : AppCompatActivity() {
     private fun registerMedicine() {
         if (nameText.text.toString().takeIf { it.isNotBlank() } != null &&
             amountText.text.toString().takeIf { it.isNotBlank() } != null &&
-            purposeText.text.toString().takeIf { it.isNotBlank() } != null) {
+            purposeText.text.toString().takeIf { it.isNotBlank() } != null
+            && imageUri != null) {
             val medicineName = nameText.text.toString()
             val purpose = purposeText.text.toString()
             val amount = amountText.text.toString().toInt()
@@ -91,60 +93,110 @@ class AddMedicineActivity : AppCompatActivity() {
             showToast(R.string.fill_mandatory_fields)
     }
 
+    interface UploadCallback {
+        fun onSuccess(downloadUrl: String)
+        fun onFailure(exception: Exception)
+    }
+
+    private fun uploadImage(name: String, callback: UploadCallback) {
+        val storage = FirebaseStorage.getInstance()
+        val storageRef = storage.reference
+        val imageRef = storageRef.child("medicines/$name.jpg")
+        val uploadTask = imageRef.putFile(imageUri!!)
+
+        uploadTask.addOnSuccessListener {
+            Log.d(TAG, "Image uploaded successfully")
+            // Handle successful upload
+            imageRef.downloadUrl.addOnSuccessListener { uri ->
+                val downloadUrl = uri.toString()
+                callback.onSuccess(downloadUrl)
+            }.addOnFailureListener { exception ->
+                // Handle failed download URL retrieval
+                callback.onFailure(exception)
+            }
+        }.addOnFailureListener {
+            Log.e(TAG, "Error uploading image")
+            showToast(R.string.something_went_wrong)
+        }
+    }
+
     private fun addNewMedicine(medicineName: String, purpose: String, amount: Int) {
-        val medicine = hashMapOf(
-            "name" to medicineName,
-            "description" to purpose,
-            "barcode" to barcode,
-            "image" to imageUri
-        )
 
-        val stock = hashMapOf(
-            "name" to pharmacy.name,
-            "locationName" to pharmacy.locationName,
-            "longitude" to pharmacy.longitude,
-            "latitude" to pharmacy.latitude,
-            "picture" to pharmacy.picture,
-            "stock" to amount
-        )
+        uploadImage(medicineName, object : UploadCallback {
+            override fun onSuccess(downloadUrl: String) {
 
-        db.collection("medicines").document(medicineName)
-            .set(medicine)
-            .addOnSuccessListener {
-            }
-            .addOnFailureListener {
-                Log.e(TAG, "Error registering medicine")
-                showToast(R.string.something_went_wrong)
-            }
+                db = Firebase.firestore
+                val medicine = hashMapOf(
+                    "name" to medicineName,
+                    "description" to purpose,
+                    "barcode" to barcode,
+                    "image" to downloadUrl
+                )
+                val stock = hashMapOf(
+                    "name" to pharmacy.name,
+                    "locationName" to pharmacy.locationName,
+                    "longitude" to pharmacy.longitude,
+                    "latitude" to pharmacy.latitude,
+                    "picture" to pharmacy.picture,
+                    "stock" to amount
+                )
 
-        db.collection("medicines").document(medicineName).collection("pharmacies").document(pharmacy.name!!)
-            .set(stock)
-            .addOnSuccessListener {
+                db.collection("medicines").document(medicineName)
+                    .set(medicine)
+                    .addOnSuccessListener {
+                    }
+                    .addOnFailureListener {
+                        Log.e(TAG, "Error registering medicine")
+                        showToast(R.string.something_went_wrong)
+                    }
+
+                db.collection("medicines").document(medicineName)
+                    .collection("pharmacies")
+                    .document(pharmacy.name!!)
+                    .set(stock)
+                    .addOnSuccessListener {
+                    }
+                    .addOnFailureListener {
+                        Log.e(TAG, "Error registering medicine")
+                        showToast(R.string.something_went_wrong)
+                    }
             }
-            .addOnFailureListener {
-                Log.e(TAG, "Error registering medicine")
-                showToast(R.string.something_went_wrong)
+            override fun onFailure(exception: Exception) {
+                showToast(R.string.error_uploading_image)
             }
+        })
     }
 
     private fun addNewMedicineToStock(medicineName: String, purpose: String, amount: Int) {
-        val stock = hashMapOf(
-            "name" to medicineName,
-            "description" to purpose,
-            "image" to imageUri,
-            "stock" to amount
-        )
-        db.collection("pharmacies").document(pharmacy.name!!).collection("medicines").document(medicineName)
-            .set(stock)
-            .addOnSuccessListener {
-                Log.d(TAG, "Medicine registered successfully")
-                showToast(R.string.medicine_registered)
-                finish()
+        uploadImage(medicineName, object : UploadCallback {
+            override fun onSuccess(downloadUrl: String) {
+
+                db = Firebase.firestore
+
+                val stock = hashMapOf(
+                    "name" to medicineName,
+                    "description" to purpose,
+                    "barcode" to barcode,
+                    "image" to downloadUrl,
+                    "stock" to amount
+                )
+
+                db.collection("pharmacies").document(pharmacy.name!!).collection("medicines").document(medicineName)
+                    .set(stock)
+                    .addOnSuccessListener {
+                        Log.d(TAG, "Medicine registered successfully")
+                        showToast(R.string.medicine_registered)
+                        finish()
+                    }
+                    .addOnFailureListener {
+                        Log.e(TAG, "Error registering medicine")
+                        showToast(R.string.something_went_wrong)
+                    }
             }
-            .addOnFailureListener {
-                Log.e(TAG, "Error registering medicine")
-                showToast(R.string.something_went_wrong)
+            override fun onFailure(exception: Exception) {
+                showToast(R.string.error_uploading_image)
             }
+        })
     }
 
     private fun pickImageCamera(){
