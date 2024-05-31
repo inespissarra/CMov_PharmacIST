@@ -23,7 +23,7 @@ class ProfileActivity : AppCompatActivity() {
     private val user = Firebase.auth.currentUser
     private lateinit var name : String
     private lateinit var email : String
-    private lateinit var username: TextView
+    private lateinit var username: EditText
     private lateinit var logoutButton: Button
     private lateinit var updateUsernameButton: Button
     private lateinit var sharedPreferences: SharedPreferences
@@ -49,7 +49,6 @@ class ProfileActivity : AppCompatActivity() {
         logoutButton = findViewById(R.id.logoutButton)
         if (user == null) {
             logoutButton.text = getString(R.string.login_caps)
-            username.text = getString(R.string.user)
         }
 
         logoutButton.setOnClickListener {
@@ -58,6 +57,8 @@ class ProfileActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             val favoritePharmaciesRepository = FavoritePharmaciesRepository(this)
             favoritePharmaciesRepository.clearPharmacies()
+            val medicineWithNotificationRepository = MedicineWithNotificationRepository(this)
+            medicineWithNotificationRepository.clearMedicines()
             startActivity(intent)
             finish()
         }

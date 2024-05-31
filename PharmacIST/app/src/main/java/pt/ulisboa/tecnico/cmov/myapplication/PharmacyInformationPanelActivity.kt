@@ -1,8 +1,11 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
 import android.app.AlertDialog
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.util.TypedValue
 import android.widget.Button
@@ -54,6 +57,19 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private var hasMoreData: Boolean = true
     private var lastFetch: DocumentSnapshot? = null
 
+    // notifications
+    private var medicineUpdateService: MedicineUpdateService? = null
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MedicineUpdateService.LocalBinder
+            medicineUpdateService = binder.getService()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            medicineUpdateService = null
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate initiated")
@@ -82,12 +98,21 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
 
         favoriteButtonEvent()
 
+        // bind notifications service
+        val intent = Intent(this, MedicineUpdateService::class.java)
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+
         Log.d(TAG, "onCreate finished")
     }
 
     override fun onResume() {
         super.onResume()
         createStockList()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(serviceConnection)
     }
 
     private fun favoriteButtonEvent() {
@@ -121,7 +146,11 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 isInUsersFavorite = true
                 findViewById<ImageButton>(R.id.favoriteIcon).isSelected = true
                 Log.d(TAG, "addToFavorite: added to favorite")
-
+                val favoritePharmaciesRepository = FavoritePharmaciesRepository(this)
+                if (pharmacyName!=null) {
+                    favoritePharmaciesRepository.insertOrUpdate(pharmacyName!!)
+                    medicineUpdateService?.addNewPharmacyCollection(pharmacyName!!)
+                }
             }
             .addOnFailureListener { e ->
                 Log.d(TAG, "addToFavorite: failed to add to favorite due to ${e.message}")
@@ -141,6 +170,11 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
                 isInUsersFavorite = false
                 findViewById<ImageButton>(R.id.favoriteIcon).isSelected = false
                 Log.d(TAG, "removeFromFavorite: removed from favorite")
+                val favoritePharmaciesRepository = FavoritePharmaciesRepository(this)
+                if (pharmacyName!=null) {
+                    favoritePharmaciesRepository.deletePharmacy(pharmacyName!!)
+                    medicineUpdateService?.removePharmacyCollection(pharmacyName!!)
+                }
             }
             .addOnFailureListener {
                 Log.w(TAG, "removeFromFavorite: Failed to remove favorite")

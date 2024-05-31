@@ -1,16 +1,22 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -40,7 +46,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     private lateinit var db: FirebaseFirestore
 
     private lateinit var mMap: GoogleMap
-    private lateinit var autocompleteFragment:AutocompleteSupportFragment
+    private var center: LatLng? = null
     private lateinit var mapSearchView: SearchView
     private lateinit var currentLocation: Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -49,11 +55,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     lateinit var pharmacyRepository: PharmacyRepository
     lateinit var favoritePharmaciesRepository: FavoritePharmaciesRepository
+    lateinit var medicineWithNotificationRepository: MedicineWithNotificationRepository
 
     companion object{
         private const val LOCATION_REQUEST_CODE = 1
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -74,7 +82,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         db = Firebase.firestore
         pharmacyRepository = PharmacyRepository(this)
+
+        // notifications
+        val serviceIntent = Intent(this, MedicineUpdateService::class.java)
+
+        auth = Firebase.auth
         favoritePharmaciesRepository = FavoritePharmaciesRepository(this)
+        medicineWithNotificationRepository = MedicineWithNotificationRepository(this)
+        if (auth.currentUser != null) {
+            getFavoritePharmacies()
+            getMedicinesWithNotifications(object : getMedicinesWithNotificationsCallback{
+                override fun onSuccess() {
+                    startForegroundService(serviceIntent)
+                }
+
+                override fun onFailure() {}
+            })
+        }
 
         Log.d(TAG, "Finished onCreate")
     }
@@ -84,21 +108,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         super.onResume()
         createBottomNavigation()
 
-        auth = Firebase.auth
-        if (auth.currentUser != null) {
-            getFavoritePharmacies()
+        if (center!=null) {
+            findNearbyPharmaciesFirebase(center!!.latitude, center!!.longitude, object : NearbyPharmaciesFirebaseCallback {
+                override fun onSuccess() {
+                    val pharmacies = pharmacyRepository.getNearbyPharmacies(center!!.latitude, center!!.longitude, 0.1)
+                    markPlaces(pharmacies)
+                }
+                override fun onFailure() {}
+            })
         }
-        //val center = mMap.cameraPosition.target
-        //findNearbyPharmaciesFirebase(center.latitude, center.longitude, object : NearbyPharmaciesFirebaseCallback {
-        //    override fun onSuccess() {}
-        //    override fun onFailure() {}
-        //})
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        favoritePharmaciesRepository.clearPharmacies()
-    }
 
     private fun createMapFragment() {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -158,6 +178,44 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                 return false
             }
         })
+    }
+
+    private fun getFavoritePharmacies(){
+        favoritePharmaciesRepository.clearPharmacies()
+        db.collection("users").document(auth.uid!!)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val favorites = document.get("favorite_pharmacies") as? List<String>
+                    if (favorites != null) {
+                        for (pharmacy in favorites) {
+                            favoritePharmaciesRepository.insertOrUpdate(pharmacy)
+                        }
+                    }
+                }
+            }
+    }
+
+    private fun getMedicinesWithNotifications(callback: getMedicinesWithNotificationsCallback){
+        medicineWithNotificationRepository.clearMedicines()
+        db.collection("users").document(auth.uid!!)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val notifications = document.get("medicine_notifications") as? List<String>
+                    if (notifications != null) {
+                        for (medicine in notifications) {
+                            medicineWithNotificationRepository.insertOrUpdate(medicine)
+                        }
+                    }
+                }
+            }
+        callback.onSuccess()
+    }
+
+    interface getMedicinesWithNotificationsCallback {
+        fun onSuccess()
+        fun onFailure()
     }
 
     private fun createBottomNavigation() {
@@ -244,30 +302,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         //}
     }
 
-    private fun getFavoritePharmacies() {
-        favoritePharmaciesRepository.clearPharmacies()
-        db.collection("users").document(auth.uid!!)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val favorites = document.get("favorite_pharmacies") as? List<String>
-                    if (favorites != null) {
-                        for (pharmacy in favorites) {
-                            favoritePharmaciesRepository.insertOrUpdate(pharmacy)
-                        }
-                    }
-
-                }
-            }
-    }
 
     private fun getPharmacies() {
-        val center = mMap.cameraPosition.target
-        var pharmacies = pharmacyRepository.getNearbyPharmacies(center.latitude, center.longitude, 0.1)
+        center = mMap.cameraPosition.target
+        var pharmacies = pharmacyRepository.getNearbyPharmacies(center!!.latitude, center!!.longitude, 0.1)
         if (pharmacies.isEmpty()) {
-            findNearbyPharmaciesFirebase(center.latitude, center.longitude, object : NearbyPharmaciesFirebaseCallback {
+            findNearbyPharmaciesFirebase(center!!.latitude, center!!.longitude, object : NearbyPharmaciesFirebaseCallback {
                 override fun onSuccess() {
-                    pharmacies = pharmacyRepository.getNearbyPharmacies(center.latitude, center.longitude, 0.1)
+                    pharmacies = pharmacyRepository.getNearbyPharmacies(center!!.latitude, center!!.longitude, 0.1)
                     markPlaces(pharmacies)
                 }
                 override fun onFailure() {

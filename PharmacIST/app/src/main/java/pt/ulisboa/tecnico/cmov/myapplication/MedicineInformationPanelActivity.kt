@@ -1,9 +1,13 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -20,6 +24,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
@@ -40,13 +47,31 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
     private lateinit var medicineNameView: TextView
     private lateinit var medicineImageView: ImageView
     private lateinit var medicineDescriptionView: TextView
+    private var isInUsersNotifications = false
     private lateinit var notificationButton : ImageButton
+    private var auth: FirebaseAuth = Firebase.auth
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var pharmacyList: ArrayList<Pair<PharmacyMetaData, Pair<Double, Int>>> = ArrayList()
     private var medicineEntry: MedicinePharmacyDBEntryData? = null
     private var medicine: MedicineMetaData? = null
     private var userLatitude: Double = 0.0
     private var userLongitude: Double = 0.0
+
+    private val medicineWithNotificationRepository = MedicineWithNotificationRepository(this)
+
+    // notifications
+    private var medicineUpdateService: MedicineUpdateService? = null
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MedicineUpdateService.LocalBinder
+            medicineUpdateService = binder.getService()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            medicineUpdateService = null
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +95,19 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
 
         notificationButton = findViewById(R.id.notificationButton)
         notificationButton.setOnClickListener {
-            it.isSelected = !it.isSelected
+            if (auth.currentUser != null && auth.uid != null) {
+                checkHasNotification()
+                if (isInUsersNotifications) {
+                    removeFromNotifications()
+                }
+                else {
+                    addToNotifications()
+                }
+            }
+            else {
+                showToast(R.string.not_logged_in)
+            }
+
         }
 
         adapter.onItemClick = {
@@ -91,6 +128,77 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             getMedicineMetaDataFromIntent()
             getUserLocationAndLoadData()
         }
+
+        // bind notifications service
+        val intent = Intent(this, MedicineUpdateService::class.java)
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(serviceConnection)
+    }
+
+    private fun addToNotifications() {
+        val updates = hashMapOf<String, Any>(
+            "medicine_notifications" to FieldValue.arrayUnion(medicineName)
+        )
+
+        db.collection("users").document(auth.uid!!)
+            .update(updates)
+            .addOnSuccessListener {
+                isInUsersNotifications = true
+                findViewById<ImageButton>(R.id.notificationButton).isSelected = true
+                Log.d(PharmacyInformationPanelActivity.TAG, "addToNotifications: added to notifications")
+                medicineWithNotificationRepository.insertOrUpdate(medicineName)
+                medicineUpdateService?.addNewMedicineCollection(medicineName)
+            }
+            .addOnFailureListener { e ->
+                Log.d(PharmacyInformationPanelActivity.TAG, "addToNotifications: failed to add to notifications due to ${e.message}")
+                showToast(R.string.something_went_wrong)
+            }
+
+    }
+
+    private fun removeFromNotifications() {
+        val updatesToRemove = hashMapOf<String, Any>(
+            "medicine_notifications" to FieldValue.arrayRemove(medicineName)
+        )
+
+        db.collection("users").document(auth.uid!!)
+            .update(updatesToRemove)
+            .addOnSuccessListener {
+                isInUsersNotifications = false
+                findViewById<ImageButton>(R.id.notificationButton).isSelected = false
+                Log.d(TAG, "removeFromNotifications: removed from notifications")
+                medicineWithNotificationRepository.deleteMedicine(medicineName)
+                medicineUpdateService?.removeMedicineCollection(medicineName)
+            }
+            .addOnFailureListener {
+                Log.w(TAG, "removeFromNotifications: Failed to remove notifications")
+                showToast(R.string.something_went_wrong)
+            }
+    }
+
+
+    private fun checkHasNotification() {
+        isInUsersNotifications = medicineWithNotificationRepository.isMedicineWithNotification(medicineName)
+        findViewById<ImageButton>(R.id.notificationButton).isSelected = isInUsersNotifications
+        //db.collection("users").document(auth.uid!!).get()
+        //    .addOnSuccessListener { document ->
+        //        if (document.exists()) {
+        //            val notifications = document.get("medicine_notifications") as? List<String>
+        //            isInUsersNotifications = notifications != null && medicineName in notifications
+        //            notificationButton.isSelected = isInUsersNotifications
+        //            Log.d(TAG, "is in notification?: " + isInUsersNotifications)
+        //        } else {
+        //            Log.d(TAG, "Document does not exist")
+        //        }
+        //    }
+        //    .addOnFailureListener { e ->
+        //        Log.w(TAG, "Error getting document", e)
+        //        showToast(R.string.something_went_wrong)
+        //    }
     }
 
     private fun checkLocationPermission() : Boolean {
@@ -247,5 +355,9 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             medicine = medicineEntry?.medicineMetaData
             loadData()
         }
+    }
+
+    private fun showToast(message: Int){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

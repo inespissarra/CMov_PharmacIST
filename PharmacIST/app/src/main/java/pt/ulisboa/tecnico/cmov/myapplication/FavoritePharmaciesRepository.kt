@@ -31,6 +31,28 @@ class FavoritePharmaciesRepository(context: Context) {
         return false
     }
 
+    fun getFavoritePharmacies(): List<String> {
+        val favoritePharmacies = mutableListOf<String>()
+        val cursor = db.query(
+            DatabaseHelper.TABLE_FAVORITE_PHARMACY,
+            arrayOf(DatabaseHelper.COLUMN_FAVORITE_PHARMACY_NAME),
+            null,
+            null,
+            null,
+            null,
+            null
+        )
+        cursor.use {
+            if (it.moveToFirst()) {
+                do {
+                    val name = it.getString(it.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FAVORITE_PHARMACY_NAME))
+                    favoritePharmacies.add(name)
+                } while (it.moveToNext())
+            }
+        }
+        return favoritePharmacies
+    }
+
 
     fun deletePharmacy(name: String) {
         db.delete(DatabaseHelper.TABLE_FAVORITE_PHARMACY, "${DatabaseHelper.COLUMN_FAVORITE_PHARMACY_NAME} = ?", arrayOf(name))
