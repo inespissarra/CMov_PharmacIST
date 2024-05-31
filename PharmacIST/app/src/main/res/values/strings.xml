@@ -117,5 +117,7 @@
     <string name="stock_added_successfully">Stock added successfully</string>
     <string name="resulting_stock_negative">Resulting stock cannot be negative</string>
     <string name="amount_cant_be_zero_or_negative">Amount cannot be zero or negative</string>
+    <string name="wifi_off">Wi-Fi Off</string>
+    <string name="wifi_not_on">Wi-Fi is not turned on. The application works best with Wi-Fi.</string>
 
 </resources>

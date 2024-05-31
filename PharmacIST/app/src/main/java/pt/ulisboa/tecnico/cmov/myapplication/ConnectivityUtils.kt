@@ -37,11 +37,13 @@ object ConnectivityUtils {
 
     private fun setupWifiDialog(activity: AppCompatActivity) {
         wifiDialog = AlertDialog.Builder(activity)
-            .setTitle("Wi-Fi Off")
-            .setMessage("Wi-Fi is not turned on. Please enable Wi-Fi to continue.")
+            .setTitle(R.string.wifi_off)
+            .setMessage(R.string.wifi_not_on)
             .setCancelable(false)
             .setPositiveButton("OK") { dialog, _ ->
                 activity.startActivity(Intent(android.provider.Settings.ACTION_WIFI_SETTINGS))
+            }.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
             }
             .create()
     }

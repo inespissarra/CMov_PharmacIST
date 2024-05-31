@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PharmacIST</string>
-    <string name="application" translatable="false">PharmacIST</string>
-    <string name="app_name">PharmacIST</string>
-    <string name="app_name">PharmacIST</string>
     <string name="application">PharmacIST</string>
     <string name="title_activity_maps">AtividadeMapas</string>
     <string name="map">Mapa</string>
@@ -111,5 +108,7 @@
     <string name="resulting_stock_negative">O inventário resultante não pode ser negativo</string>
     <string name="amount_cant_be_zero_or_negative">O input não pode ser zero ou negativo</string>
     <string name="input_must_not_be_zero">O input não pode ser zero</string>
+    <string name="wifi_off">Wi-Fi Desligado</string>
+    <string name="wifi_not_on">O Wi-Fi está desligado. A aplicação funciona melhor com Wi-Fi.</string>
 
 </resources>
