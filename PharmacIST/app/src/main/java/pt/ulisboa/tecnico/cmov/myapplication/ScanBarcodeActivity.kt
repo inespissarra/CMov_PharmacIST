@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -108,9 +109,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
                     addRegisterButton.text = getString(R.string.add_stock_to_medicine)
                     addRegisterButton.setOnClickListener {
                         addAmountDialog(medicine, object: AddAmountCallback{
-                            override fun onSuccess(){
-                                finish()
-                            }
+                            override fun onSuccess(){}
                             override fun onFailure(){}
                         })
                     }
@@ -247,9 +246,13 @@ class ScanBarcodeActivity : AppCompatActivity() {
             .setTitle("For medicine ${medicine.name}")
             .setView(dialogLayout)
             .setPositiveButton("OK") { _, _ ->
-                amount = editText.text.toString().toInt()
-                addStockToPharmacy(medicine, amount!!)
-                addStockToMedicine(medicine.name!!, amount!!)
+                amount = editText.text.toString().toIntOrNull()
+                if (amount == null) {
+                    Log.e(TAG, "User tried to input a non-number")
+                    showToast(R.string.input_must_be_number)
+                    return@setPositiveButton
+                }
+                addStock(medicine, amount!!)
                 callback.onSuccess()
             }
             . setNegativeButton("Cancel") { dialog, _ ->
@@ -266,21 +269,132 @@ class ScanBarcodeActivity : AppCompatActivity() {
         fun onFailure()
     }
 
-    private fun addStockToMedicine(medicine: String, amount: Int) {
-        val stockRef = db.collection("medicines").document(medicine).collection("pharmacies").document(pharmacyName!!)
-        stockRef.get()
-            .addOnSuccessListener {  document ->
-                if (document.exists()) {
-                    stockRef.update("stock", FieldValue.increment(amount.toLong()))
-                        .addOnSuccessListener {
-                            Log.d(TAG, "stock added successfully in medicines/pharmacies")
-                        }
-                        .addOnFailureListener {
-                            Log.e(TAG, "stock addition failed in medicines/pharmacies")
-                        }
+    private fun addStock(medicine: MedicineMetaData, amount: Int) {
+        Log.d(TAG, "pharmacy name: " + pharmacyName + "\nmedicine name: " + medicine.name)
+
+        val stockRef = db
+            .collection("pharmacies")
+            .document(pharmacyName!!)
+            .collection("medicines")
+            .document(medicine.name!!)
+        val stockRef2 = db
+            .collection("medicines")
+            .document(medicine.name!!)
+            .collection("pharmacies")
+            .document(pharmacyName!!)
+
+        db.runTransaction { transaction ->
+            val document = transaction.get(stockRef)
+            val document2 = transaction.get(stockRef2)
+
+            if (document.exists() && document2.exists()) {
+                Log.d(TAG, "Both documents exist")
+                val stock = document.getLong("stock")?.toInt() ?: 0
+                val newStock = stock + amount
+
+                if (newStock < 0) {
+                    Log.e(TAG, "New stock would be negative")
+                    throw Exception("Stock cannot be negative!")
+                } else if (newStock == 0) {
+                    stockRef.delete().addOnSuccessListener {
+                        Log.d(TAG, "Stock became 0 and was removed from pharmacies")
+                        return@addOnSuccessListener
+                    }.addOnFailureListener {
+                        Log.e(BuyMedicineActivity.TAG, "Error removing stock from pharmacies")
+                        throw Exception("Error removing stock from pharmacies")
+                    }
+                    stockRef2.delete().addOnSuccessListener {
+                        Log.d(TAG, "Stock became 0 and was removed from medicines")
+                        return@addOnSuccessListener
+                    }.addOnFailureListener {
+                        Log.e(BuyMedicineActivity.TAG, "Error removing stock from medicines")
+                        throw Exception("Error removing stock from medicines")
+                    }
+                } else {
+                    Log.d(TAG, "newStock: $newStock in both collections")
+                    transaction.update(stockRef, "stock", newStock)
+                    transaction.update(stockRef2, "stock", newStock)
                 }
-                else {
-                    val stock = hashMapOf(
+            } else if (document.exists()) {
+                Log.e(TAG, "Document does not exist in medicines")
+
+                val stock = document.getLong("stock")?.toInt() ?: 0
+                val newStock = stock + amount
+
+                if (newStock < 0) {
+                    Log.e(TAG, "New stock would be negative")
+                    throw Exception("Stock cannot be negative!")
+                }
+
+                if (amount <= 0) {
+                    Log.e(TAG, "Amount is negative or zero and stock is 0")
+                    throw Exception("Amount is negative or zero and stock is 0")
+                }
+                val add = hashMapOf(
+                    "name" to pharmacy.name,
+                    "locationName" to pharmacy.locationName,
+                    "longitude" to pharmacy.longitude,
+                    "latitude" to pharmacy.latitude,
+                    "picture" to pharmacy.picture,
+                    "stock" to newStock
+                )
+                stockRef2.set(add)
+                    .addOnSuccessListener {
+                        Log.d(TAG, "Stock created on medicines successfully")
+                    }.addOnFailureListener {
+                        Log.e(TAG, "Error creating stock on medicines, e=$it")
+                        throw Exception("Error creating stock on medicines")
+                    }
+                transaction.update(stockRef, "stock", newStock)
+            } else if (document2.exists()) {
+                val stock = document.getLong("stock")?.toInt() ?: 0
+                val newStock = stock + amount
+
+                if (newStock < 0) {
+                    Log.e(TAG, "New stock would be negative")
+                    throw Exception("Stock cannot be negative!")
+                }
+
+                Log.e(TAG, "Document does not exist in pharmacies")
+                if (amount <= 0) {
+                    Log.e(TAG, "Amount is negative or zero and stock is 0")
+                    throw Exception("Amount is negative or zero and stock is 0")
+                }
+                val add = hashMapOf(
+                    "name" to medicine.name,
+                    "description" to medicine.description,
+                    "image" to medicine.image,
+                    "stock" to newStock
+                )
+                stockRef.set(add)
+                    .addOnSuccessListener {
+                        Log.d(TAG, "Stock created on pharmacies successfully")
+                    }.addOnFailureListener {
+                        Log.e(TAG, "Error creating stock on pharmacies, e=$it")
+                        throw Exception("Error creating stock on pharmacies")
+                    }
+                transaction.update(stockRef2, "stock", newStock)
+            } else {
+                Log.e(TAG, "Neither document exists")
+
+                if (amount <= 0) {
+                    Log.e(TAG, "Removed stock and entered here")
+                } else {
+                    val add = hashMapOf(
+                        "name" to medicine.name,
+                        "description" to medicine.description,
+                        "image" to medicine.image,
+                        "stock" to amount
+                    )
+                    stockRef.set(add)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "Stock created on pharmacies successfully")
+                        }.addOnFailureListener {
+                            Log.e(TAG, "Error creating stock on pharmacies, e=$it")
+                            throw Exception("Error creating stock on pharmacies")
+                        }
+
+                    val add2 = hashMapOf(
                         "name" to pharmacy.name,
                         "locationName" to pharmacy.locationName,
                         "longitude" to pharmacy.longitude,
@@ -288,50 +402,23 @@ class ScanBarcodeActivity : AppCompatActivity() {
                         "picture" to pharmacy.picture,
                         "stock" to amount
                     )
-                    stockRef.set(stock)
+                    stockRef2.set(add2)
                         .addOnSuccessListener {
-                        }
-                        .addOnFailureListener {
-                            Log.e(TAG, "Error adding stock to medicine/pharmacies")
-                            showToast(R.string.something_went_wrong)
+                            Log.d(TAG, "Stock created on medicines successfully")
+                        }.addOnFailureListener {
+                            Log.e(TAG, "Error creating stock on medicines, e=$it")
+                            throw Exception("Error creating stock on medicines")
                         }
                 }
             }
-
-    }
-
-    private fun addStockToPharmacy(medicine: MedicineMetaData, amount: Int) {
-        Log.d(TAG, "pharmacy name: " + pharmacyName + "\nmedicine name: " + medicine.name)
-
-        val stockRef = db.collection("pharmacies").document(pharmacyName!!).collection("medicines").document(medicine.name!!)
-
-        stockRef.get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    stockRef.update("stock", FieldValue.increment(amount.toLong()))
-                        .addOnSuccessListener {
-                            Log.d(TAG, "stock added successfully in pharmacies")
-                        }
-                        .addOnFailureListener {
-                            Log.e(TAG, "stock addition failed in pharmacies")
-                        }
-                }
-                else {
-                    val stock = hashMapOf(
-                        "name" to medicine.name,
-                        "description" to medicine.description,
-                        "image" to medicine.image,
-                        "stock" to amount
-                    )
-                    stockRef.set(stock)
-                        .addOnSuccessListener {
-                            Log.d(TAG, "Stock created successfully")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e(TAG, "Stock creation failed", e)
-                        }
-                }
-            }
+        }.addOnSuccessListener {
+            Log.d(TAG, "Successfully added stock")
+            showToast(R.string.stock_added_successfully)
+            finish()
+        }.addOnFailureListener {
+            showToast(R.string.something_went_wrong)
+            Log.e(TAG, "Error adding stock, e=$it")
+        }
     }
 
     private fun showToast(message: Int){
