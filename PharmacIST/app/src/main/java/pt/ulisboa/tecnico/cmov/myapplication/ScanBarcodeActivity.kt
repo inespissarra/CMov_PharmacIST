@@ -246,7 +246,8 @@ class ScanBarcodeActivity : AppCompatActivity() {
             .setView(dialogLayout)
             .setPositiveButton("OK") { dialog, which ->
                 amount = editText.text.toString().toInt()
-                addAmountToMedicine(medicine, amount!!)
+                addStockToPharmacy(medicine, amount!!)
+                addStockToMedicine(medicine.name!!, amount!!)
                 callback.onSuccess()
             }
             . setNegativeButton("Cancel") { dialog, which ->
@@ -263,7 +264,18 @@ class ScanBarcodeActivity : AppCompatActivity() {
         fun onFailure()
     }
 
-    private fun addAmountToMedicine(medicine: MedicineMetaData, amount: Int) {
+    private fun addStockToMedicine(medicine: String, amount: Int) {
+        db.collection("medicines").document(medicine).collection("pharmacies").document(pharmacyName!!)
+            .update("stock", FieldValue.increment(amount.toLong()))
+            .addOnSuccessListener {
+                Log.d(TAG, "stock added successfully in medicines")
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "stock addition failed in medicines")
+            }
+    }
+
+    private fun addStockToPharmacy(medicine: MedicineMetaData, amount: Int) {
         Log.d(TAG, "pharmacy name: " + pharmacyName + "\nmedicine name: " + medicine.name)
 
         val stockRef = db.collection("pharmacies").document(pharmacyName!!).collection("medicines").document(medicine.name!!)
@@ -273,10 +285,10 @@ class ScanBarcodeActivity : AppCompatActivity() {
                 if (document.exists()) {
                     stockRef.update("stock", FieldValue.increment(amount.toLong()))
                         .addOnSuccessListener {
-                            Log.d(TAG, "stock added successfully")
+                            Log.d(TAG, "stock added successfully in pharmacies")
                         }
                         .addOnFailureListener {
-                            Log.e(TAG, "stock addition failed")
+                            Log.e(TAG, "stock addition failed in pharmacies")
                         }
                 }
                 else {

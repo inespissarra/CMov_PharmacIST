@@ -80,7 +80,6 @@ class BuyMedicineActivity : AppCompatActivity() {
             .update("stock", FieldValue.increment((-amount).toLong()))
             .addOnSuccessListener {
                 Log.d(TAG, "Medicine bought successfully")
-                showToast(R.string.medicine_bought_successfully)
             }
             .addOnFailureListener {
                 Log.e(TAG, "Error buying medicine")

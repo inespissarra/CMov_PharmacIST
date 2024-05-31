@@ -416,8 +416,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val manageStock: Button = findViewById(R.id.manageStock)
         manageStock.setOnClickListener {
             val intent = Intent(this, ScanBarcodeActivity::class.java)
-            val isNull = pharmacy == null
-            Log.d(TAG, "Is pharmacy null? " + isNull.toString())
             intent.putExtra("pharmacy", pharmacy)
             this.startActivity(intent)
         }
