@@ -81,6 +81,16 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             insets
         }
 
+        val intentSender = intent.getStringExtra("sender")
+        Log.d(TAG, "Received intent from $intentSender")
+        if (intentSender == "MedicineActivity") {
+            getMedicineEntryFromIntent()
+            setupAdapter()
+        } else if (intentSender == "PharmacyInformationPanelActivity") {
+            getMedicineMetaDataFromIntent()
+            getUserLocationAndLoadData()
+        }
+
         medicineWithNotificationRepository = MedicineWithNotificationRepository(this)
         if (auth.currentUser != null) {
             checkHasNotification()
@@ -109,16 +119,6 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        val intentSender = intent.getStringExtra("sender")
-        Log.d(TAG, "Received intent from $intentSender")
-        if (intentSender == "MedicineActivity") {
-            getMedicineEntryFromIntent()
-            setupAdapter()
-        } else if (intentSender == "PharmacyInformationPanelActivity") {
-            getMedicineMetaDataFromIntent()
-            getUserLocationAndLoadData()
-        }
     }
 
     private fun addToNotifications() {
