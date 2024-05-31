@@ -1,15 +1,12 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
-import android.content.ComponentName
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
@@ -59,6 +56,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
     companion object{
         private const val LOCATION_REQUEST_CODE = 1
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -90,10 +88,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         favoritePharmaciesRepository = FavoritePharmaciesRepository(this)
         medicineWithNotificationRepository = MedicineWithNotificationRepository(this)
         if (auth.currentUser != null) {
-            getFavoritePharmacies()
-            getMedicinesWithNotifications(object : getMedicinesWithNotificationsCallback{
+            getFavoritePharmacies(object: getFavoritePharmaciesCallback{
                 override fun onSuccess() {
-                    startForegroundService(serviceIntent)
+                    getMedicinesWithNotifications(object : getMedicinesWithNotificationsCallback{
+                        override fun onSuccess() {
+                            if (checkNotificationPermission() || requestNotificationPermission()) {
+                                startForegroundService(serviceIntent)
+                            }
+                        }
+
+                        override fun onFailure() {}
+                    })
                 }
 
                 override fun onFailure() {}
@@ -101,6 +106,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         }
 
         Log.d(TAG, "Finished onCreate")
+    }
+
+    private fun checkNotificationPermission() :Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ActivityCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        } else {
+            return true
+        }
+    }
+    private fun requestNotificationPermission() :Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this as Activity,
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                NOTIFICATION_PERMISSION_REQUEST_CODE
+            )
+            return checkNotificationPermission()
+        }
+        return true
     }
 
 
@@ -180,9 +207,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         })
     }
 
-    private fun getFavoritePharmacies(){
+    private fun getFavoritePharmacies(callback : getFavoritePharmaciesCallback) {
         favoritePharmaciesRepository.clearPharmacies()
-        db.collection("users").document(auth.uid!!)
+        db.collection("users").document(auth.currentUser!!.uid)
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
@@ -193,12 +220,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
                         }
                     }
                 }
+                callback.onSuccess()
             }
+            .addOnFailureListener {
+                callback.onFailure()
+            }
+    }
+
+    interface getFavoritePharmaciesCallback {
+        fun onSuccess()
+        fun onFailure()
     }
 
     private fun getMedicinesWithNotifications(callback: getMedicinesWithNotificationsCallback){
         medicineWithNotificationRepository.clearMedicines()
-        db.collection("users").document(auth.uid!!)
+        db.collection("users").document(auth.currentUser!!.uid)
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
@@ -288,18 +324,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
             val latLng = LatLng(pharmacy.latitude!!, pharmacy.longitude!!)
             addMarker(pharmacy.name!!, latLng)
         }
-        //for(latLng in staredPlaces){
-        //    addStarMarker(latLng)
-        //}
-        //private fun checkIsFavorite() {
-        //    db.collection("users").document(auth.uid!!).collection("favorite_pharmacies")
-        //        .whereEqualTo("name", pharmacyName)
-        //        .get()
-        //        .addOnSuccessListener {documents ->
-        //            isInUsersFavorite = !documents.isEmpty
-        //            findViewById<ImageButton>(R.id.favoriteIcon).isSelected = isInUsersFavorite
-        //        }
-        //}
     }
 
 

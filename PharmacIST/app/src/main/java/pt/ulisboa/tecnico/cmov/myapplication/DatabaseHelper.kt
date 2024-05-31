@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        const val DATABASE_VERSION = 4
+        const val DATABASE_VERSION = 5
         const val DATABASE_NAME = "cache.db"
 
         const val TABLE_PHARMACY = "pharmacy"

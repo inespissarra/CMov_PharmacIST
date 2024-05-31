@@ -29,6 +29,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -57,20 +58,7 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
     private var userLatitude: Double = 0.0
     private var userLongitude: Double = 0.0
 
-    private val medicineWithNotificationRepository = MedicineWithNotificationRepository(this)
-
-    // notifications
-    private var medicineUpdateService: MedicineUpdateService? = null
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as MedicineUpdateService.LocalBinder
-            medicineUpdateService = binder.getService()
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            medicineUpdateService = null
-        }
-    }
+    private lateinit var medicineWithNotificationRepository : MedicineWithNotificationRepository
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,10 +80,13 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             insets
         }
 
+        medicineWithNotificationRepository = MedicineWithNotificationRepository(this)
+        if (auth.currentUser != null) {
+            checkHasNotification()
+        }
         notificationButton = findViewById(R.id.notificationButton)
         notificationButton.setOnClickListener {
-            if (auth.currentUser != null && auth.uid != null) {
-                checkHasNotification()
+            if (auth.currentUser != null) {
                 if (isInUsersNotifications) {
                     removeFromNotifications()
                 }
@@ -127,15 +118,6 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             getMedicineMetaDataFromIntent()
             getUserLocationAndLoadData()
         }
-
-        // bind notifications service
-        val intent = Intent(this, MedicineUpdateService::class.java)
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unbindService(serviceConnection)
     }
 
     private fun addToNotifications() {
@@ -143,14 +125,13 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             "medicine_notifications" to FieldValue.arrayUnion(medicineName)
         )
 
-        db.collection("users").document(auth.uid!!)
-            .update(updates)
+        db.collection("users").document(auth.currentUser!!.uid)
+            .set(updates, SetOptions.merge())
             .addOnSuccessListener {
                 isInUsersNotifications = true
                 findViewById<ImageButton>(R.id.notificationButton).isSelected = true
                 Log.d(PharmacyInformationPanelActivity.TAG, "addToNotifications: added to notifications")
                 medicineWithNotificationRepository.insertOrUpdate(medicineName)
-                medicineUpdateService?.addNewMedicineCollection(medicineName)
             }
             .addOnFailureListener { e ->
                 Log.d(PharmacyInformationPanelActivity.TAG, "addToNotifications: failed to add to notifications due to ${e.message}")
@@ -164,14 +145,13 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
             "medicine_notifications" to FieldValue.arrayRemove(medicineName)
         )
 
-        db.collection("users").document(auth.uid!!)
+        db.collection("users").document(auth.currentUser!!.uid)
             .update(updatesToRemove)
             .addOnSuccessListener {
                 isInUsersNotifications = false
                 findViewById<ImageButton>(R.id.notificationButton).isSelected = false
                 Log.d(TAG, "removeFromNotifications: removed from notifications")
-                medicineWithNotificationRepository.deleteMedicine(medicineName)
-                medicineUpdateService?.removeMedicineCollection(medicineName)
+                    medicineWithNotificationRepository.deleteMedicine(medicineName)
             }
             .addOnFailureListener {
                 Log.w(TAG, "removeFromNotifications: Failed to remove notifications")
@@ -183,21 +163,6 @@ class MedicineInformationPanelActivity : AppCompatActivity() {
     private fun checkHasNotification() {
         isInUsersNotifications = medicineWithNotificationRepository.isMedicineWithNotification(medicineName)
         findViewById<ImageButton>(R.id.notificationButton).isSelected = isInUsersNotifications
-        //db.collection("users").document(auth.uid!!).get()
-        //    .addOnSuccessListener { document ->
-        //        if (document.exists()) {
-        //            val notifications = document.get("medicine_notifications") as? List<String>
-        //            isInUsersNotifications = notifications != null && medicineName in notifications
-        //            notificationButton.isSelected = isInUsersNotifications
-        //            Log.d(TAG, "is in notification?: " + isInUsersNotifications)
-        //        } else {
-        //            Log.d(TAG, "Document does not exist")
-        //        }
-        //    }
-        //    .addOnFailureListener { e ->
-        //        Log.w(TAG, "Error getting document", e)
-        //        showToast(R.string.something_went_wrong)
-        //    }
     }
 
     private fun checkLocationPermission() : Boolean {
