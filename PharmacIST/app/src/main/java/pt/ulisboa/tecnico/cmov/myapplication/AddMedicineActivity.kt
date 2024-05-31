@@ -90,7 +90,6 @@ class AddMedicineActivity : AppCompatActivity() {
             val purpose = purposeText.text.toString()
             val amount = amountText.text.toString().toInt()
             addNewMedicine(medicineName, purpose, amount)
-            addNewMedicineToStock(medicineName, purpose, amount)
         }
         else
             showToast(R.string.fill_mandatory_fields)
@@ -128,7 +127,6 @@ class AddMedicineActivity : AppCompatActivity() {
         uploadImage(medicineName, object : UploadCallback {
             override fun onSuccess(downloadUrl: String) {
 
-                db = Firebase.firestore
                 val medicine = hashMapOf(
                     "name" to medicineName,
                     "description" to purpose,
@@ -141,6 +139,13 @@ class AddMedicineActivity : AppCompatActivity() {
                     "longitude" to pharmacy.longitude,
                     "latitude" to pharmacy.latitude,
                     "picture" to pharmacy.picture,
+                    "stock" to amount
+                )
+                val pharmacyStock = hashMapOf(
+                    "name" to medicineName,
+                    "description" to purpose,
+                    "barcode" to barcode,
+                    "image" to downloadUrl,
                     "stock" to amount
                 )
 
@@ -163,6 +168,18 @@ class AddMedicineActivity : AppCompatActivity() {
                         Log.e(TAG, "Error registering medicine")
                         showToast(R.string.something_went_wrong)
                     }
+
+                db.collection("pharmacies").document(pharmacy.name!!).collection("medicines").document(medicineName)
+                    .set(pharmacyStock)
+                    .addOnSuccessListener {
+                        Log.d(TAG, "Medicine registered successfully")
+                        showToast(R.string.medicine_registered)
+                        finish()
+                    }
+                    .addOnFailureListener {
+                        Log.e(TAG, "Error registering medicine")
+                        showToast(R.string.something_went_wrong)
+                    }
             }
             override fun onFailure(exception: Exception) {
                 showToast(R.string.error_uploading_image)
@@ -173,8 +190,6 @@ class AddMedicineActivity : AppCompatActivity() {
     private fun addNewMedicineToStock(medicineName: String, purpose: String, amount: Int) {
         uploadImage(medicineName, object : UploadCallback {
             override fun onSuccess(downloadUrl: String) {
-
-                db = Firebase.firestore
 
                 val stock = hashMapOf(
                     "name" to medicineName,
