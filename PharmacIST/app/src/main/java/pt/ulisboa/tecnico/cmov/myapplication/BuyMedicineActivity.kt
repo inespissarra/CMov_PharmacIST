@@ -37,7 +37,7 @@ class BuyMedicineActivity : AppCompatActivity() {
 
     private fun createView() {
         medicine = intent.getParcelableExtra<MedicineMetaData>("medicine")!!
-        stock = intent.getIntExtra("stock", 0)
+        // stock = intent.getIntExtra("stock", 0)
         pharmacyName = intent.getStringExtra("pharmacyName")!!
 
         // NAME
@@ -45,16 +45,13 @@ class BuyMedicineActivity : AppCompatActivity() {
         if (medicine.name == null) medicineNameTextView.text = "ErrorName"
         else {
             medicineNameTextView.text = medicine.name
+            getStock(medicine.name!!)
         }
         if (medicine.name == "ErrorName") Log.e(PharmacyInformationPanelActivity.TAG, "Error loading medicine's name")
 
         // IMAGE
         val medicineImage: ImageView = findViewById(R.id.medicineImage)
         Glide.with(this@BuyMedicineActivity).load(medicine.image).into(medicineImage)
-
-        // STOCK
-        val stockAmountTextView: TextView = findViewById(R.id.stockAmount)
-        stockAmountTextView.text = stock.toString()
 
         // BUY
         val buyButton: Button = findViewById(R.id.buy)
@@ -63,14 +60,30 @@ class BuyMedicineActivity : AppCompatActivity() {
         }
     }
 
+    private fun getStock(medicineName: String) {
+        db.collection("pharmacies").document(pharmacyName).collection("medicines").document(medicineName).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    stock = document.getLong("stock")!!.toInt()
+                    val stockAmountTextView: TextView = findViewById(R.id.stockAmount)
+                    stockAmountTextView.text = stock.toString()
+                }
+            }
+            .addOnFailureListener {
+                showToast(R.string.something_went_wrong)
+            }
+    }
+
     private fun buyMedicine() {
         val amountEditText: EditText = findViewById(R.id.amountEdit)
         if (amountEditText.text.toString().takeIf { it.isNotBlank() } != null) {
             val insertedStock: Int = amountEditText.text.toString().toInt()
+            getStock(medicine.name!!)
             if (insertedStock > stock) {
                 showToast(R.string.not_enough_stock)
             }
-            makePurchase(medicine.name!!, insertedStock)
+            else
+                makePurchase(medicine.name!!, insertedStock)
         }
     }
 
