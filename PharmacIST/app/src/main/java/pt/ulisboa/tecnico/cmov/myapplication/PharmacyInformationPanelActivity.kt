@@ -4,6 +4,9 @@ import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -57,6 +60,8 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     private var hasMoreData: Boolean = true
     private var lastFetch: DocumentSnapshot? = null
 
+    private lateinit var favoritePharmaciesRepository : FavoritePharmaciesRepository
+
     // notifications
     private var medicineUpdateService: MedicineUpdateService? = null
     private val serviceConnection = object : ServiceConnection {
@@ -73,6 +78,8 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate initiated")
+
+        favoritePharmaciesRepository = FavoritePharmaciesRepository(this)
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_pharmacy_information_panel)
@@ -120,7 +127,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
         val favoriteButton : ImageButton = findViewById(R.id.favoriteIcon)
         favoriteButton.setOnClickListener {
             // only add if user is logged in
-            if (auth.currentUser != null && auth.uid != null) {
+            if (auth.currentUser != null) {
                 checkIsFavorite()
                 if (isInUsersFavorite) {
                     removeFromFavorite()
@@ -140,8 +147,8 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             "favorite_pharmacies" to FieldValue.arrayUnion(pharmacyName)
         )
 
-        db.collection("users").document(auth.uid!!)
-            .update(updates)
+        db.collection("users").document(auth.currentUser!!.uid)
+            .set(updates, SetOptions.merge())
             .addOnSuccessListener {
                 isInUsersFavorite = true
                 findViewById<ImageButton>(R.id.favoriteIcon).isSelected = true
@@ -164,13 +171,12 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             "favorite_pharmacies" to FieldValue.arrayRemove(pharmacyName)
         )
 
-        db.collection("users").document(auth.uid!!)
+        db.collection("users").document(auth.currentUser!!.uid)
             .update(updatesToRemove)
             .addOnSuccessListener {
                 isInUsersFavorite = false
                 findViewById<ImageButton>(R.id.favoriteIcon).isSelected = false
                 Log.d(TAG, "removeFromFavorite: removed from favorite")
-                val favoritePharmaciesRepository = FavoritePharmaciesRepository(this)
                 if (pharmacyName!=null) {
                     favoritePharmaciesRepository.deletePharmacy(pharmacyName!!)
                     medicineUpdateService?.removePharmacyCollection(pharmacyName!!)
@@ -183,22 +189,8 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     }
 
     private fun checkIsFavorite() {
-
-        db.collection("users").document(auth.uid!!).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val favorites = document.get("favorite_pharmacies") as? List<*>
-                    isInUsersFavorite = favorites != null && pharmacyName in favorites
-                    findViewById<ImageButton>(R.id.favoriteIcon).isSelected = isInUsersFavorite
-                    Log.d(TAG, "is in favorite?: " + isInUsersFavorite)
-                } else {
-                    Log.d(TAG, "Document does not exist")
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Error getting document", e)
-                showToast(R.string.something_went_wrong)
-            }
+        isInUsersFavorite = favoritePharmaciesRepository.isFavoritePharmacy(pharmacyName!!)
+        findViewById<ImageButton>(R.id.favoriteIcon).isSelected = isInUsersFavorite
     }
 
     @Suppress("DEPRECATION")
@@ -451,6 +443,31 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             intent.putExtra("pharmacy", pharmacy)
             this.startActivity(intent)
         }
+    }
+
+    /**
+     * Checks what type of connectivity the user has
+     *
+     * @param context The context of the caller
+     * @return Int: 0 -> No connectivity; 1 -> Mobile Data; WiFi or stronger -> 2
+     */
+    private fun checkConnectivity(context: Context): Int {
+        //
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities =
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+        if (capabilities != null) {
+            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+                return 1
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+                return 2
+            }
+        }
+        return 0
     }
 
     private fun showToast(message: Int){
