@@ -150,7 +150,7 @@ class ScanBarcodeActivity : AppCompatActivity() {
     }
 
     // Register the launcher and result handler
-    private val barcodeLauncher = registerForActivityResult<ScanOptions, ScanIntentResult>(
+    private val barcodeLauncher = registerForActivityResult(
         ScanContract()
     ) { result: ScanIntentResult ->
         if (result.contents == null) {
