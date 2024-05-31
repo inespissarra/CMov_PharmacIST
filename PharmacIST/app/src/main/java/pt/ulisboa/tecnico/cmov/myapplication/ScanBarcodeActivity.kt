@@ -251,6 +251,10 @@ class ScanBarcodeActivity : AppCompatActivity() {
                     Log.e(TAG, "User tried to input a non-number")
                     showToast(R.string.input_must_be_number)
                     return@setPositiveButton
+                } else if (amount == 0) {
+                    Log.e(TAG, "User tried to input 0")
+                    showToast(R.string.input_must_not_be_zero)
+                    return@setPositiveButton
                 }
                 addStock(medicine, amount!!)
                 callback.onSuccess()

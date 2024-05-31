@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">PharmacIST</string>
     <string name="application" translatable="false">PharmacIST</string>
+    <string name="app_name">PharmacIST</string>
+    <string name="app_name">PharmacIST</string>
+    <string name="application">PharmacIST</string>
     <string name="title_activity_maps">AtividadeMapas</string>
     <string name="map">Mapa</string>
     <string name="medicine">Medicamento</string>
@@ -106,5 +109,7 @@
     <string name="input_must_be_number">Input tem de ser um número</string>
     <string name="stock_added_successfully">Inventário adicionado com sucesso</string>
     <string name="resulting_stock_negative">O inventário resultante não pode ser negativo</string>
+    <string name="amount_cant_be_zero_or_negative">O input não pode ser zero ou negativo</string>
+    <string name="input_must_not_be_zero">O input não pode ser zero</string>
 
 </resources>

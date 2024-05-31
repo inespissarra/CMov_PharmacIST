@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">PharmacIST</string>
-    <string name="application" translatable="false">PharmacIST</string>
+    <string name="application">PharmacIST</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="google_map_api_key" translatable="false">AIzaSyAUZHmeyoE6PxFAwRbvZRWdCWH4vCEAhiw</string>
     <string name="map">Map</string>
@@ -113,6 +113,7 @@
     <string name="see_original_text">see original</string>
     <string name="see_translated_text">see translated</string>
     <string name="input_must_be_number">Input must be a number</string>
+    <string name="input_must_not_be_zero">Input must not be zero</string>
     <string name="stock_added_successfully">Stock added successfully</string>
     <string name="resulting_stock_negative">Resulting stock cannot be negative</string>
     <string name="amount_cant_be_zero_or_negative">Amount cannot be zero or negative</string>
