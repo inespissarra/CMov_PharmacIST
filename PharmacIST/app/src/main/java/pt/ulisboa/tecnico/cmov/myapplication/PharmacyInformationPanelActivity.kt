@@ -1,10 +1,7 @@
 package pt.ulisboa.tecnico.cmov.pharmacist
 
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -39,7 +36,7 @@ import com.google.firebase.ktx.Firebase
 class PharmacyInformationPanelActivity: AppCompatActivity() {
 
     companion object {
-        val TAG = "PharmacyInformationPanelActivity"
+        const val TAG = "PharmacyInformationPanelActivity"
     }
 
     private var db: FirebaseFirestore = Firebase.firestore
@@ -173,7 +170,7 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
     @Suppress("DEPRECATION")
     private fun getDataFromIntent() {
         Log.d(TAG, "here")
-        pharmacy = intent.getParcelableExtra<PharmacyMetaData>("pharmacy")!!
+        pharmacy = intent.getParcelableExtra("pharmacy")!!
         val name : TextView = findViewById(R.id.pharmacyName)
         val address : TextView = findViewById(R.id.pharmacyLocation)
         val pharmacyImage: ImageView = findViewById(R.id.pharmacyImage)
@@ -413,7 +410,6 @@ class PharmacyInformationPanelActivity: AppCompatActivity() {
             }
     }
 
-    @Suppress("DEPRECATION")
     private fun createManageStock() {
         val manageStock: Button = findViewById(R.id.manageStock)
         manageStock.setOnClickListener {

@@ -17,7 +17,7 @@ import com.google.firebase.ktx.Firebase
 class BuyMedicineActivity : AppCompatActivity() {
 
     companion object {
-        val TAG = "BuyMedicineActivity"
+        const val TAG = "BuyMedicineActivity"
     }
 
     private lateinit var medicine: MedicineMetaData
